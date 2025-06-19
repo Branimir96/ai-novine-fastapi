@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}AI Novine - {{ category }}{% endblock %}
+
+{% block content %}
+<!-- Category Header -->
+{% set category_colors = {
+    'Hrvatska': '#FF6B6B',
+    'Svijet': '#4ECDC4', 
+    'Ekonomija': '#45B7D1',
+    'Sport': '#96CEB4',
+    'Regija': '#FECA57'
+} %}
+
+{% set category_icons = {
+    'Hrvatska': '🇭🇷',
+    'Svijet': '🌍',
+    'Ekonomija': '💼', 
+    'Sport': '⚽',
+    'Regija': '🏛️'
+} %}
+
+{% set category_descriptions = {
+    'Hrvatska': 'Najnovije vijesti iz domaćih medija',
+    'Svijet': 'Međunarodne vijesti prevedene na hrvatski',
+    'Ekonomija': 'Poslovne i ekonomske vijesti',
+    'Sport': 'Sportske vijesti iz Hrvatske i svijeta',
+    'Regija': 'Najvažnije vijesti iz susjednih zemalja'
+} %}
+
+<div style="background: {{ category_colors.get(category, '#667eea') or '#667eea' }}; color: white; padding: 1.5rem; border-radius: 15px; text-align: center; font-weight: bold; margin: 1rem 0;">
+    <h2 style="margin: 0;">
+        {{ category_icons.get(category, '📰') }} {{ category }}
+    </h2>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 1rem;">
+        {{ category_descriptions.get(category, 'Najnovije vijesti') }}
+    </p>
+</div>
+
+<!-- Status and Refresh Info -->
+<div style="background: white; padding: 1rem; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin: 1rem 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        {% set background_color = '#28a745' if cache_status == 'fresh fetch' else '#17a2b8' %}
+        <div style="background: {{ background_color }}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem;">
+            {% if cache_status == 'fresh fetch' %}🔄 Najnovije vijesti{% else %}💾 Iz cache{% endif %}
+        </div>
+        {% if last_updated and last_updated != 'Never' %}
+        <div style="color: #6c757d; font-size: 0.9rem;">
+            🕐 Ažurirano: {% if last_updated.strftime is defined %}{{ last_updated.strftime('%H:%M:%S') }}{% else %}{{ last_updated }}{% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <button onclick="refreshNews()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 0.5rem 1rem; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+        🔄 Osvježi vijesti
+    </button>
+</div>
+
+<!-- Articles Count -->
+{% if articles %}
+<div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 1rem; border-radius: 15px; text-align: center; margin: 1rem 0;">
+    <h4 style="margin: 0;">📊 Ukupno {{ articles|length }} članaka</h4>
+</div>
+{% endif %}
+
+<!-- News Articles -->
+{% if articles %}
+    {% for article in articles %}
+    <div class="article-card" style="border-left-color: {{ category_colors.get(category, '#667eea') or '#667eea' }};">
+        <div class="article-title">
+            📰 {{ article.naslov }}
+        </div>
+        
+        <!-- Article preview text -->
+        <p style="color: #555; line-height: 1.6; margin-bottom: 1rem;">
+            {% set article_text = article.tekst|string %}
+            {% if article_text|length > 300 %}
+                {{ article_text[:300] }}...
+            {% else %}
+                {{ article_text }}
+            {% endif %}
+        </p>
+        
+        <!-- Article metadata -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div class="article-source">
+                📍 {{ article.izvor }}
+            </div>
+            {% if article.link and article.link != '#' %}
+            <a href="{{ article.link }}" target="_blank" class="read-more-btn">📖 Čitaj više</a>
+            {% endif %}
+        </div>
+        
+        <!-- Show full text toggle -->
+        {% set article_text = article.tekst|string %}
+        {% if article_text|length > 300 %}
+        <div style="margin-top: 1rem;">
+            <button onclick="toggleFullText(this)" style="background: none; border: 1px solid #667eea; color: #667eea; padding: 0.3rem 0.8rem; border-radius: 15px; cursor: pointer; font-size: 0.8rem; transition: all 0.3s ease;" data-full-text="{{ article_text|e }}">
+                ▼ Prikaži cijeli tekst
+            </button>
+            <div class="full-text" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; border-left: 3px solid {{ category_colors.get(category, '#667eea') }};">
+                {{ article_text }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+{% else %}
+    <!-- No articles message -->
+    <div style="background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center; margin: 2rem 0;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">📰</div>
+        <h3 style="color: #6c757d; margin-bottom: 1rem;">Nema dostupnih vijesti</h3>
+        <p style="color: #6c757d; margin-bottom: 2rem;">Trenutno nema vijesti za kategoriju {{ category }}. Pokušajte osvježiti stranicu ili se vratite kasnije.</p>
+        <button onclick="refreshNews()" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; cursor: pointer; font-size: 1rem;">
+            🔄 Pokušaj ponovno
+        </button>
+    </div>
+{% endif %}
+
+<!-- Back to home link -->
+<div style="text-align: center; margin: 3rem 0;">
+    <a href="/" style="background: linear-gradient(45deg, #6c757d, #495057); color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 25px; font-weight: 500; display: inline-block; transition: all 0.3s ease;">
+        ← Povratak na početnu stranicu
+    </a>
+</div>
+
+<script>
+// Function to refresh news
+async function refreshNews() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    // Show loading state
+    button.innerHTML = '⏳ Osvježavam...';
+    button.disabled = true;
+    button.style.opacity = '0.7';
+    
+    try {
+        const response = await fetch('/api/refresh/{{ category.lower() }}', {
+            method: 'POST'
+        });
+        
+        if (response.ok) {
+            // Wait a moment for the background task to complete
+            setTimeout(() => {
+                location.reload();
+            }, 3000);
+            
+            button.innerHTML = '✅ Osvježavam...';
+        } else {
+            throw new Error('Greška pri osvježavanju');
+        }
+    } catch (error) {
+        button.innerHTML = '❌ Greška!';
+        setTimeout(() => {
+            button.innerHTML = originalText;
+            button.disabled = false;
+            button.style.opacity = '1';
+        }, 3000);
+    }
+}
+
+// Function to toggle full text display
+function toggleFullText(button) {
+    const fullTextDiv = button.nextElementSibling;
+    const isHidden = fullTextDiv.style.display === 'none' || fullTextDiv.style.display === '';
+    
+    if (isHidden) {
+        fullTextDiv.style.display = 'block';
+        button.innerHTML = '▲ Sakrij tekst';
+        button.style.background = '#667eea';
+        button.style.color = 'white';
+        button.style.borderColor = '#667eea';
+    } else {
+        fullTextDiv.style.display = 'none';
+        button.innerHTML = '▼ Prikaži cijeli tekst';
+        button.style.background = 'none';
+        button.style.color = '#667eea';
+        button.style.borderColor = '#667eea';
+    }
+}
+</script>
+{% endblock %}

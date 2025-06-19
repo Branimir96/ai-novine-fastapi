@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}AI Novine - Admin Dashboard{% endblock %}
+
+{% block content %}
+<style>
+.admin-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin: 1rem 0;
+}
+
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status-running { background: #28a745; color: white; }
+.status-stopped { background: #dc3545; color: white; }
+.status-completed { background: #28a745; color: white; }
+.status-failed { background: #dc3545; color: white; }
+.status-running-task { background: #17a2b8; color: white; }
+
+.admin-button {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    margin: 0.3rem;
+}
+
+.admin-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.admin-button.danger {
+    background: linear-gradient(45deg, #dc3545, #c82333);
+}
+
+.admin-button.success {
+    background: linear-gradient(45deg, #28a745, #218838);
+}
+
+.grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.log-table th, .log-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    font-size: 0.9rem;
+}
+
+.log-table th {
+    background: #f8f9fa;
+    font-weight: bold;
+}
+
+.log-table tr:hover {
+    background: #f8f9fa;
+}
+</style>
+
+<!-- Admin Header -->
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin: 1rem 0;">
+    <h2 style="margin: 0;">⚙️ Admin Dashboard</h2>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">News Scheduler Management & Monitoring</p>
+    <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">{{ current_time.strftime('%A, %d.%m.%Y %H:%M:%S') }}</p>
+</div>
+
+<!-- Scheduler Status and Controls -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📅 Scheduler Status</h3>
+    
+    <div class="grid-2">
+        <div>
+            <h4>Current Status</h4>
+            <div style="margin: 1rem 0;">
+                <span class="status-badge {% if scheduler_status.is_running %}status-running{% else %}status-stopped{% endif %}">
+                    {% if scheduler_status.is_running %}🟢 Running{% else %}🔴 Stopped{% endif %}
+                </span>
+            </div>
+            
+            {% if scheduler_status.is_running %}
+            <p style="color: #28a745; margin: 0.5rem 0;">✅ Automatic news updates are active</p>
+            {% else %}
+            <p style="color: #dc3545; margin: 0.5rem 0;">⚠️ Automatic news updates are disabled</p>
+            {% endif %}
+        </div>
+        
+        <div>
+            <h4>Controls</h4>
+            <div style="margin: 1rem 0;">
+                {% if scheduler_status.is_running %}
+                <button class="admin-button danger" onclick="controlScheduler('stop')">
+                    🛑 Stop Scheduler
+                </button>
+                {% else %}
+                <button class="admin-button success" onclick="controlScheduler('start')">
+                    ▶️ Start Scheduler
+                </button>
+                {% endif %}
+                <button class="admin-button" onclick="refreshPage()">
+                    🔄 Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scheduled Jobs -->
+    {% if scheduler_status.jobs %}
+    <div style="margin-top: 2rem;">
+        <h4>Scheduled Jobs</h4>
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+            {% for job in scheduler_status.jobs %}
+            <div style="margin: 0.5rem 0; padding: 0.5rem; background: white; border-radius: 5px;">
+                <strong>{{ job.name }}</strong><br>
+                <small style="color: #6c757d;">
+                    Next run: {% if job.next_run %}{{ job.next_run }}{% else %}Not scheduled{% endif %}<br>
+                    Trigger: {{ job.trigger }}
+                </small>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Manual Fetch Controls -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">🔄 Manual News Fetch</h3>
+    
+    <div style="margin: 1rem 0;">
+        <button class="admin-button" onclick="manualFetch('all')">
+            📰 Fetch All Categories
+        </button>
+    </div>
+    
+    <div style="margin: 1rem 0;">
+        <h4>Fetch Individual Categories:</h4>
+        <button class="admin-button" onclick="manualFetch('hrvatska')">🇭🇷 Hrvatska</button>
+        <button class="admin-button" onclick="manualFetch('svijet')">🌍 Svijet</button>
+        <button class="admin-button" onclick="manualFetch('ekonomija')">💼 Ekonomija</button>
+        <button class="admin-button" onclick="manualFetch('sport')">⚽ Sport</button>
+        <button class="admin-button" onclick="manualFetch('regija')">🏛️ Regija</button>
+    </div>
+</div>
+
+<!-- Cache Status -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">💾 Cache Status</h3>
+    
+    <div class="grid-3">
+        {% for category, status in scheduler_status.cache_status.items() %}
+        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid {% if status.cached %}#28a745{% else %}#dc3545{% endif %};">
+            <h5 style="margin: 0 0 0.5rem 0;">{{ category }}</h5>
+            <div style="font-size: 0.9rem; color: #6c757d;">
+                <div>Status: 
+                    <span class="status-badge {% if status.cached %}status-completed{% else %}status-failed{% endif %}">
+                        {% if status.cached %}✅ Cached{% else %}❌ Empty{% endif %}
+                    </span>
+                </div>
+                {% if status.cached %}
+                <div>Articles: {{ status.articles_count }}</div>
+                <div>Updated: {% if status.last_updated %}{{ status.last_updated }}{% else %}Never{% endif %}</div>
+                {% endif %}
+            </div>
+            <button class="admin-button danger" onclick="clearCache('{{ category.lower() }}')" style="font-size: 0.8rem; padding: 0.3rem 0.8rem; margin-top: 0.5rem;">
+                🗑️ Clear
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div style="margin-top: 1rem; text-align: center;">
+        <button class="admin-button danger" onclick="clearCache('all')">
+            🗑️ Clear All Cache
+        </button>
+    </div>
+</div>
+
+<!-- Recent Task History -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📋 Recent Task History</h3>
+    
+    {% if recent_tasks %}
+    <div style="overflow-x: auto;">
+        <table class="log-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Articles</th>
+                    <th>Duration</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in recent_tasks %}
+                <tr>
+                    <td>{{ task.start_time }}</td>
+                    <td>{{ task.category }}</td>
+                    <td>
+                        <span class="status-badge status-{{ task.status }}">
+                            {% if task.status == 'completed' %}✅{% elif task.status == 'failed' %}❌{% else %}⏳{% endif %}
+                            {{ task.status.title() }}
+                        </span>
+                    </td>
+                    <td>{{ task.articles_count }}</td>
+                    <td>{% if task.execution_time %}{{ "%.2f"|format(task.execution_time) }}s{% else %}-{% endif %}</td>
+                    <td>{% if task.error_message %}{{ task.error_message[:50] }}...{% else %}-{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem; color: #6c757d;">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">📋</div>
+        <p>No task history available yet.</p>
+        <p>Run a manual fetch or start the scheduler to see task logs here.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Statistics Overview -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">📊 System Statistics</h3>
+    
+    <div class="grid-3">
+        <div style="text-align: center; padding: 1rem; background: #e3f2fd; border-radius: 8px;">
+            <div style="font-size: 2rem; color: #1976d2; margin-bottom: 0.5rem;">{{ recent_tasks|length }}</div>
+            <div style="color: #1976d2; font-weight: bold;">Total Tasks Executed</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1rem; background: #e8f5e8; border-radius: 8px;">
+            <div style="font-size: 2rem; color: #388e3c; margin-bottom: 0.5rem;">
+                {% set successful_tasks = recent_tasks | selectattr('status', 'equalto', 'completed') | list %}
+                {{ successful_tasks|length }}
+            </div>
+            <div style="color: #388e3c; font-weight: bold;">Successful Tasks</div>
+        </div>
+        
+        <div style="text-align: center; padding: 1rem; background: #ffebee; border-radius: 8px;">
+            <div style="font-size: 2rem; color: #d32f2f; margin-bottom: 0.5rem;">
+                {% set failed_tasks = recent_tasks | selectattr('status', 'equalto', 'failed') | list %}
+                {{ failed_tasks|length }}
+            </div>
+            <div style="color: #d32f2f; font-weight: bold;">Failed Tasks</div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Links -->
+<div class="admin-card">
+    <h3 style="margin-bottom: 1rem; color: #2c3e50;">🔗 Quick Links</h3>
+    
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="/" class="admin-button" style="text-decoration: none;">🏠 Home Page</a>
+        <a href="/docs" class="admin-button" style="text-decoration: none;">📖 API Docs</a>
+        <a href="/api/cache-status" target="_blank" class="admin-button" style="text-decoration: none;">📊 Cache API</a>
+        <a href="/admin/logs" target="_blank" class="admin-button" style="text-decoration: none;">📋 Full Logs</a>
+    </div>
+</div>
+
+<!-- Status Messages -->
+<div id="statusMessage" style="display: none; position: fixed; top: 20px; right: 20px; background: #28a745; color: white; padding: 1rem; border-radius: 8px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15);"></div>
+
+<script>
+// Auto-refresh page every 30 seconds
+let autoRefreshInterval;
+
+function startAutoRefresh() {
+    autoRefreshInterval = setInterval(() => {
+        window.location.reload();
+    }, 30000); // 30 seconds
+}
+
+function stopAutoRefresh() {
+    if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+    }
+}
+
+// Start auto-refresh when page loads
+window.onload = function() {
+    startAutoRefresh();
+};
+
+// Stop auto-refresh when leaving page
+window.onbeforeunload = function() {
+    stopAutoRefresh();
+};
+
+function showStatusMessage(message, type = 'success') {
+    const statusDiv = document.getElementById('statusMessage');
+    statusDiv.textContent = message;
+    statusDiv.style.display = 'block';
+    statusDiv.style.background = type === 'success' ? '#28a745' : '#dc3545';
+    
+    setTimeout(() => {
+        statusDiv.style.display = 'none';
+    }, 5000);
+}
+
+async function controlScheduler(action) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '⏳ Processing...';
+    button.disabled = true;
+    
+    try {
+        const response = await fetch(`/admin/scheduler/${action}`, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showStatusMessage(result.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            throw new Error(result.detail || 'Unknown error');
+        }
+    } catch (error) {
+        showStatusMessage(`Error: ${error.message}`, 'error');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+async function manualFetch(category) {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '⏳ Fetching...';
+    button.disabled = true;
+    
+    try {
+        const endpoint = category === 'all' ? '/admin/fetch/all' : `/admin/fetch/${category}`;
+        const response = await fetch(endpoint, {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showStatusMessage(`${result.message}. Page will refresh in 10 seconds.`, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 10000);
+        } else {
+            throw new Error(result.detail || 'Unknown error');
+        }
+    } catch (error) {
+        showStatusMessage(`Error: ${error.message}`, 'error');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+async function clearCache(category) {
+    if (!confirm(`Are you sure you want to clear cache for ${category}?`)) {
+        return;
+    }
+    
+    const button = event.target;
+    const originalText = button.innerHTML;
+    
+    button.innerHTML = '⏳ Clearing...';
+    button.disabled = true;
+    
+    try {
+        const endpoint = category === 'all' ? '/admin/cache/all' : `/admin/cache/${category}`;
+        const response = await fetch(endpoint, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showStatusMessage(result.message, 'success');
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            throw new Error(result.detail || 'Unknown error');
+        }
+    } catch (error) {
+        showStatusMessage(`Error: ${error.message}`, 'error');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    }
+}
+
+function refreshPage() {
+    window.location.reload();
+}
+</script>
+{% endblock %}

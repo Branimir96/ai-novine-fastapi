@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}AI Novine - Početna stranica{% endblock %}
+
+{% block content %}
+<div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 2rem 0;">
+    <h2 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">🌟 Dobrodošli u AI Novine</h2>
+    <p style="color: #555; line-height: 1.6; text-align: center; font-size: 1.1rem;">
+        Portal s pravim vijestima koje se automatski dohvaćaju svakog dana u <strong>8:00 ujutro</strong> i <strong>18:00 navečer</strong>. 
+        Vijesti se dohvaćaju direktno iz RSS feedova popularnih medijskih kuća iz različitih zemalja, 
+        a strane vijesti se automatski prevode na hrvatski jezik pomoću napredne AI tehnologije.
+    </p>
+</div>
+
+<!-- Current Date and Time -->
+<div style="background: linear-gradient(135deg, #fd79a8, #fdcb6e); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin: 2rem 0; font-weight: bold;">
+    <h3 style="margin: 0; margin-bottom: 0.5rem;">📅 {{ current_date }}</h3>
+    <p style="margin: 0; font-size: 1.1rem;">🕐 Trenutno vrijeme: {{ current_time }}</p>
+</div>
+
+<!-- Category Descriptions -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #FF6B6B; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #FF6B6B; margin-bottom: 1rem;">🇭🇷 Hrvatska</h3>
+        <p style="color: #555; margin: 0;">Najnovije vijesti iz domaćih medija - HRT, Index, tportal, 24sata, Večernji list</p>
+        <a href="/news/hrvatska" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #FF6B6B; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+    
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #4ECDC4; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #4ECDC4; margin-bottom: 1rem;">🌍 Svijet</h3>
+        <p style="color: #555; margin: 0;">Međunarodne vijesti prevedene na hrvatski - NYT, BBC, Guardian, Al Jazeera</p>
+        <a href="/news/svijet" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #4ECDC4; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+    
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #45B7D1; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #45B7D1; margin-bottom: 1rem;">💼 Ekonomija</h3>
+        <p style="color: #555; margin: 0;">Poslovne i ekonomske vijesti - NYT Business, BBC Business, CNBC, Financial Times</p>
+        <a href="/news/ekonomija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #45B7D1; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+    
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #96CEB4; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #96CEB4; margin-bottom: 1rem;">⚽ Sport</h3>
+        <p style="color: #555; margin: 0;">Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
+        <a href="/news/sport" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #96CEB4; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+    
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #FECA57; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #FECA57; margin-bottom: 1rem;">🏛️ Regija</h3>
+        <p style="color: #555; margin: 0;">Najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije</p>
+        <a href="/news/regija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #FECA57; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+</div>
+
+<!-- Quick Access Stats -->
+<div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 2rem; border-radius: 15px; text-align: center; margin: 2rem 0;">
+    <h3 style="margin-bottom: 1rem;">📊 Portal Statistike</h3>
+    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="font-size: 2rem; font-weight: bold;">5</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Kategorija vijesti</div>
+        </div>
+        <div>
+            <div style="font-size: 2rem; font-weight: bold;">20+</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Međunarodnih izvora</div>
+        </div>
+        <div>
+            <div style="font-size: 2rem; font-weight: bold;">2x</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Dnevno osvježavanje</div>
+        </div>
+        <div>
+            <div style="font-size: 2rem; font-weight: bold;">🤖</div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">AI prijevod</div>
+        </div>
+    </div>
+</div>
+
+<!-- API Access Information -->
+<div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 2rem 0;">
+    <h3 style="color: #2c3e50; margin-bottom: 1rem;">🔗 API pristup</h3>
+    <p style="color: #555; margin-bottom: 1rem;">Vaše vijesti su dostupne i preko API-ja za programatski pristup:</p>
+    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; color: #495057;">
+        <div><strong>Dokumentacija:</strong> <a href="/docs" style="color: #667eea;">/docs</a></div>
+        <div><strong>API vijesti:</strong> /api/news/{kategorija}</div>
+        <div><strong>Status cache:</strong> <a href="/api/cache-status" style="color: #667eea;">/api/cache-status</a></div>
+    </div>
+</div>
+{% endblock %}

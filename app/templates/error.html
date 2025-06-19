@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}AI Novine - Greška{% endblock %}
+
+{% block content %}
+<div style="background: white; padding: 3rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); text-align: center; margin: 2rem 0;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
+    <h2 style="color: #dc3545; margin-bottom: 1rem;">Dogodila se greška</h2>
+    <p style="color: #6c757d; margin-bottom: 2rem; font-size: 1.1rem;">{{ error }}</p>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/" style="background: linear-gradient(45deg, #667eea, #764ba2); color: white; padding: 1rem 2rem; text-decoration: none; border-radius: 25px; font-weight: 500; display: inline-block; transition: all 0.3s ease;">
+            🏠 Početna stranica
+        </a>
+        <button onclick="window.history.back()" style="background: linear-gradient(45deg, #6c757d, #495057); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; cursor: pointer; font-weight: 500;">
+            ← Nazad
+        </button>
+        <button onclick="window.location.reload()" style="background: linear-gradient(45deg, #28a745, #20c997); color: white; border: none; padding: 1rem 2rem; border-radius: 25px; cursor: pointer; font-weight: 500;">
+            🔄 Pokušaj ponovno
+        </button>
+    </div>
+</div>
+
+<!-- Error details for debugging (only shown in development) -->
+<div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 2rem 0; border-left: 4px solid #dc3545;">
+    <h4 style="color: #dc3545; margin-bottom: 1rem;">📋 Detalji greške</h4>
+    <p style="color: #6c757d; font-family: monospace; font-size: 0.9rem; background: white; padding: 1rem; border-radius: 5px; word-break: break-all;">{{ error }}</p>
+    <p style="color: #6c757d; font-size: 0.9rem; margin-top: 1rem;">
+        Ako se greška nastavi pojavljivati, molimo kontaktirajte administratora sustava.
+    </p>
+</div>
+{% endblock %}
