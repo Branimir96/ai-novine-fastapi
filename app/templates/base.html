@@ -2,55 +2,104 @@
 <html lang="hr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, initial-scale=1.0, maximum-scale=5.0">
     <title>{% block title %}AI Novine{% endblock %}</title>
     <link href="/static/css/style.css" rel="stylesheet">
     <style>
-        /* Main header styling */
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            line-height: 1.6;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            min-height: 100vh;
+        }
+
+        /* Container with proper mobile padding */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+        }
+
+        /* Main header - mobile optimized */
         .main-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 2rem;
+            padding: 1.5rem 1rem;
             border-radius: 15px;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             text-align: center;
             color: white;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
         }
         
         .main-header h1 {
-            font-size: 3rem;
+            font-size: 2.2rem;
             margin-bottom: 0.5rem;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            word-wrap: break-word;
         }
         
         .main-header p {
-            font-size: 1.2rem;
+            font-size: 1rem;
             opacity: 0.9;
             margin: 0;
+            line-height: 1.4;
+        }
+
+        /* News ticker - mobile optimized */
+        .news-ticker {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            color: white;
+            padding: 8px 12px;
+            overflow: hidden;
+            white-space: nowrap;
+            border-radius: 10px;
+            margin: 15px 0;
+            width: 100%;
         }
         
-        /* Navigation Bar Styling */
+        .news-ticker-content {
+            display: inline-block;
+            animation: ticker 45s linear infinite;
+            font-size: 0.9rem;
+        }
+        
+        @keyframes ticker {
+            0% { transform: translate3d(100%, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Navigation Bar - mobile first design */
         .nav-bar {
             background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
             border-radius: 15px;
-            padding: 1rem 2rem;
-            margin: 2rem 0;
+            padding: 1rem;
+            margin: 1.5rem 0;
             box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             border: 1px solid rgba(102, 126, 234, 0.1);
+            width: 100%;
         }
         
         .nav-buttons {
             display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
+            gap: 0.8rem;
+            width: 100%;
         }
         
         .nav-button {
             background: linear-gradient(135deg, #f8f9fa, #e9ecef);
             border: 2px solid transparent;
-            padding: 1rem 1.5rem;
+            padding: 1rem;
             border-radius: 12px;
             text-decoration: none;
             color: #495057;
@@ -58,14 +107,15 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            min-width: 120px;
             text-align: center;
-            display: inline-block;
+            display: block;
+            width: 100%;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .nav-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        .nav-button:hover, .nav-button:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.2);
             border-color: #667eea;
             color: #667eea;
             text-decoration: none;
@@ -75,32 +125,37 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border-color: #667eea;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-1px);
         }
-        
-        /* Article cards */
+
+        /* Article cards - mobile optimized */
         .article-card {
             background: linear-gradient(145deg, #f8f9fa, #e9ecef);
-            padding: 1.5rem;
+            padding: 1.2rem;
             border-radius: 15px;
             margin: 1rem 0;
             border-left: 4px solid #28a745;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
             transition: all 0.3s ease;
+            width: 100%;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .article-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
         }
         
         .article-title {
             color: #2c3e50;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: bold;
             margin-bottom: 1rem;
             line-height: 1.4;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
         
         .article-source {
@@ -108,93 +163,239 @@
             color: white;
             padding: 0.3rem 0.8rem;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             display: inline-block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
         }
         
         .read-more-btn {
             background: linear-gradient(45deg, #28a745, #20c997);
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             border-radius: 25px;
             text-decoration: none;
             font-weight: 500;
             display: inline-block;
             transition: all 0.3s ease;
             border: none;
+            font-size: 0.9rem;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .read-more-btn:hover {
-            transform: scale(1.05);
+            transform: scale(1.02);
             box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
             color: white;
             text-decoration: none;
         }
-        
-        /* Container and layout */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f7fa;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
+
         /* Footer */
         .footer {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             text-align: center;
-            padding: 2rem;
-            margin-top: 3rem;
+            padding: 1.5rem 1rem;
+            margin-top: 2rem;
+            width: 100%;
         }
-        
-        /* News ticker */
-        .news-ticker {
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            color: white;
-            padding: 10px;
-            overflow: hidden;
-            white-space: nowrap;
-            border-radius: 10px;
-            margin: 20px 0;
+
+        .footer h4 {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
         }
-        
-        .news-ticker-content {
-            display: inline-block;
-            animation: ticker 30s linear infinite;
+
+        .footer p {
+            margin: 0;
+            opacity: 0.8;
+            font-size: 0.9rem;
+            line-height: 1.4;
         }
-        
-        @keyframes ticker {
-            0% { transform: translate3d(100%, 0, 0); }
-            100% { transform: translate3d(-100%, 0, 0); }
-        }
-        
-        /* Responsive design */
-        @media (max-width: 768px) {
+
+        /* Tablet styles (768px - 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            .main-header h1 {
+                font-size: 2.5rem;
+            }
+
+            .main-header p {
+                font-size: 1.1rem;
+            }
+
             .nav-buttons {
-                flex-direction: column;
-                gap: 0.5rem;
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .article-title {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Desktop styles (1025px+) */
+        @media (min-width: 1025px) {
+            .container {
+                padding: 2rem;
+            }
+
+            .main-header {
+                padding: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .main-header h1 {
+                font-size: 3rem;
+            }
+
+            .main-header p {
+                font-size: 1.2rem;
+            }
+
+            .nav-bar {
+                padding: 1rem 2rem;
+                margin: 2rem 0;
+            }
+
+            .nav-buttons {
+                flex-direction: row;
+                justify-content: center;
+                align-items: center;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .nav-button {
+                min-width: 120px;
+                width: auto;
+                padding: 1rem 1.5rem;
+            }
+
+            .article-card {
+                padding: 1.5rem;
+            }
+
+            .article-title {
+                font-size: 1.3rem;
+            }
+
+            .footer {
+                padding: 2rem;
+            }
+        }
+
+        /* Prevent horizontal overflow on all elements */
+        .container, .main-header, .nav-bar, .nav-buttons, .nav-button, 
+        .article-card, .footer, .news-ticker {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Ensure text doesn't overflow */
+        h1, h2, h3, h4, h5, h6, p, span, div, a {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+
+        /* Safe area for devices with notches */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+            
+            .main-header, .nav-bar, .footer {
+                margin-left: env(safe-area-inset-left);
+                margin-right: env(safe-area-inset-right);
+            }
+        }
+
+        /* Touch improvements for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-button, .read-more-btn {
+                min-height: 44px; /* Apple's recommended touch target size */
+            }
+            
+            .nav-button:active {
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                transform: scale(0.98);
+            }
+        }
+
+        /* Loading states and animations */
+        .loading {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Custom scrollbar for webkit browsers */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #764ba2, #667eea);
+        }
+
+        /* High DPI display optimizations */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+            .main-header, .nav-bar, .article-card, .footer {
+                -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
+            }
+        }
+
+        /* Reduce motion for users who prefer it */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            
+            .news-ticker-content {
+                animation: none;
+                transform: none;
+            }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+            }
+            
+            .article-card {
+                background: linear-gradient(145deg, #2d2d2d, #3a3a3a);
+                color: #e0e0e0;
+            }
+            
+            .article-title {
+                color: #f0f0f0;
             }
             
             .nav-button {
-                width: 100%;
-                min-width: auto;
-            }
-            
-            .main-header h1 {
-                font-size: 2rem;
-            }
-            
-            .container {
-                padding: 1rem;
+                background: linear-gradient(135deg, #2d2d2d, #3a3a3a);
+                color: #e0e0e0;
             }
         }
     </style>
@@ -236,5 +437,57 @@
         <h4 style="margin-bottom: 1rem;">📰 AI Novine</h4>
         <p style="margin: 0; opacity: 0.8;">Vaš pametni portal za najnovije vijesti • Powered by FastAPI • Made with ❤️</p>
     </div>
+
+    <script>
+        // Prevent double-tap zoom on iOS
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Add loading states to navigation buttons
+        document.querySelectorAll('.nav-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Don't show loading for active page
+                if (!this.classList.contains('active')) {
+                    this.style.opacity = '0.7';
+                    this.innerHTML = this.innerHTML.replace(/^[🇭🌍💼⚽🏛]/, '⏳');
+                }
+            });
+        });
+
+        // Optimize images for mobile
+        if ('loading' in HTMLImageElement.prototype) {
+            const images = document.querySelectorAll('img[loading="lazy"]');
+            images.forEach(img => {
+                img.src = img.dataset.src;
+            });
+        }
+
+        // Service Worker registration for PWA capabilities (optional)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registered: ', registration);
+                }).catch(function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
