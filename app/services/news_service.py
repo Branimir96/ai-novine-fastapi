@@ -205,19 +205,33 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
     """
     Prevodi vijesti koristeći Anthropic model ako nisu na hrvatskom jeziku
     """
-    # Ako nema vijesti, vraćamo None
+    print(f"🔄 prevedi_vijesti called with {len(vijesti) if vijesti else 0} articles, source language: {izvorni_jezik}")
+    
+    # If no news, return None
     if vijesti is None:
+        print("⚠️ No news to translate")
         return None
         
-    # Ako su vijesti već na hrvatskom, ne prevodimo ih
+    # If news are already in Croatian, don't translate
     if izvorni_jezik == "hr":
+        print(f"✅ News already in Croatian, returning {len(vijesti)} articles")
         return vijesti
     
-    # Ako je mixed jezik, preskačemo prevođenje
+    # If mixed language, skip translation
     if izvorni_jezik == "mixed":
+        print(f"✅ Mixed language content, returning {len(vijesti)} articles without translation")
         return vijesti
+    
+    # Check if API key is available
+    if not ANTHROPIC_API_KEY:
+        print("❌ Cannot translate: ANTHROPIC_API_KEY not found")
+        print("Please check your .env file contains: ANTHROPIC_API_KEY=your-key-here")
+        return vijesti  # Return original news if no API key
     
     try:
+        print(f"🔄 Starting translation of {len(vijesti)} articles from {izvorni_jezik} to {ciljni_jezik}")
+        print(f"Using API key: {ANTHROPIC_API_KEY[:15]}...")
+        
         client = ChatAnthropic(
             anthropic_api_key=ANTHROPIC_API_KEY,
             model_name="claude-3-haiku-20240307"
@@ -225,47 +239,76 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
         
         prevedene_vijesti = []
         
-        for vijest in vijesti:
+        for i, vijest in enumerate(vijesti):
+            print(f"🔄 Translating article {i+1}/{len(vijesti)}: {vijest['naslov'][:50]}...")
+            
             naslov = vijest['naslov']
             tekst = vijest['tekst']
             
+            # Create a more specific prompt
             prompt = f"""
             Prevedi sljedeći naslov i tekst vijesti s {izvorni_jezik} jezika na hrvatski jezik. 
-            Zadrži sve informacije i stil, samo prevedi sadržaj.
+            Zadrži sve informacije i stil, samo prevedi sadržaj. Budi precizan i prirodan.
             
             Naslov: {naslov}
+            
             Tekst: {tekst}
             
-            Format odgovora:
-            Naslov: [prevedeni naslov]
-            Tekst: [prevedeni tekst]
+            Molim te odgovori u sljedećem formatu:
+            NASLOV: [prevedeni naslov]
+            TEKST: [prevedeni tekst]
             """
             
-            odgovor = client.invoke(prompt)
-            prijevod = odgovor.content
-            
-            # Parsiranje prevedenog naslova i teksta
-            prevedeni_naslov = naslov  # defaultna vrijednost ako ekstrakcija ne uspije
-            prevedeni_tekst = tekst    # defaultna vrijednost ako ekstrakcija ne uspije
-            
-            if "Naslov:" in prijevod:
-                prevedeni_naslov = prijevod.split("Naslov:")[1].split("\n")[0].strip()
-            
-            if "Tekst:" in prijevod:
-                prevedeni_tekst = prijevod.split("Tekst:")[1].strip()
-            
-            prevedene_vijesti.append({
-                'naslov': prevedeni_naslov,
-                'tekst': prevedeni_tekst,
-                'izvor': vijest['izvor'] + " (prevedeno)",
-                'link': vijest['link']
-            })
+            try:
+                odgovor = client.invoke(prompt)
+                prijevod = odgovor.content
+                print(f"✅ Got translation response for article {i+1}")
+                
+                # Parse the translated title and text
+                prevedeni_naslov = naslov  # Default fallback
+                prevedeni_tekst = tekst    # Default fallback
+                
+                # Extract translated titlevenv
+                if "NASLOV:" in prijevod:
+                    lines = prijevod.split("\n")
+                    for line in lines:
+                        if line.strip().startswith("NASLOV:"):
+                            prevedeni_naslov = line.replace("NASLOV:", "").strip()
+                            break
+                
+                # Extract translated text
+                if "TEKST:" in prijevod:
+                    tekst_start = prijevod.find("TEKST:")
+                    if tekst_start != -1:
+                        prevedeni_tekst = prijevod[tekst_start + 6:].strip()
+                
+                prevedene_vijesti.append({
+                    'naslov': prevedeni_naslov,
+                    'tekst': prevedeni_tekst,
+                    'izvor': vijest['izvor'] + " (prevedeno)",
+                    'link': vijest['link']
+                })
+                
+                print(f"✅ Article {i+1} translated successfully")
+                
+            except Exception as article_error:
+                print(f"❌ Failed to translate article {i+1}: {article_error}")
+                # Keep original article if translation fails
+                prevedene_vijesti.append({
+                    'naslov': naslov,
+                    'tekst': tekst,
+                    'izvor': vijest['izvor'] + " (translation failed)",
+                    'link': vijest['link']
+                })
         
+        print(f"✅ Translation completed: {len(prevedene_vijesti)} articles processed")
         return prevedene_vijesti
+        
     except Exception as e:
-        print(f"Greška pri prevođenju vijesti: {str(e)}")
-        return vijesti  # Ako prijevod ne uspije, vrati originalne vijesti
-
+        print(f"❌ Translation service failed: {str(e)}")
+        print("📝 Returning original articles without translation")
+        return vijesti  # Return original news if translation fails
+    
 def generiraj_hrvatska_vijesti():
     """Dohvaća najnovije vijesti iz Hrvatske iz RSS feedova"""
     try:
