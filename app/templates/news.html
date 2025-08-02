@@ -436,36 +436,6 @@
     <p>{{ config.desc }}</p>
 </div>
 
-<!-- Status and Refresh Info -->
-<div class="status-bar">
-    <div class="status-info">
-        <div class="status-badges">
-            {% if category == 'Hrvatska' %}
-            <div class="status-badge status-ai-enhanced">🤖 AI-poboljšano</div>
-            {% elif cache_status == 'fresh_fetch' %}
-            <div class="status-badge status-fresh">🔄 Najnovije vijesti</div>
-            {% else %}
-            <div class="status-badge status-cache">💾 Iz cache</div>
-            {% endif %}
-            
-            {% if last_updated and last_updated != 'Never' %}
-            <div class="status-time">
-                🕐 Ažurirano: 
-                {% if last_updated.strftime is defined %}
-                    {{ last_updated.strftime('%H:%M:%S') }}
-                {% else %}
-                    {{ last_updated }}
-                {% endif %}
-            </div>
-            {% endif %}
-        </div>
-        
-        <button onclick="refreshNews()" class="refresh-button" id="refreshBtn">
-            🔄 Osvježi vijesti
-        </button>
-    </div>
-</div>
-
 <!-- Articles Count -->
 {% if articles %}
 <div class="articles-count">
