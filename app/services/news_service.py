@@ -8,10 +8,10 @@ from langchain_anthropic import ChatAnthropic
 
 load_dotenv()
 
-# Postavite API ključ za Anthropic
+# Get API key from environment
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-# Definicija RSS feedova za različite zemlje i kategorije
+# RSS Feeds configuration (keep your existing RSS_FEEDS dictionary)
 RSS_FEEDS = {
     "Hrvatska": [
         "https://vijesti.hrt.hr/rss",
@@ -36,14 +36,14 @@ RSS_FEEDS = {
         "https://www.theguardian.com/business/economics/rss",
         "https://www.forbes.com/business/feed/",
     ],
-    "Sport_HR": [  # Interni naziv za hrvatske sportske vijesti
+    "Sport_HR": [
         "https://www.index.hr/rss/sport",
         "https://sportske.jutarnji.hr/rss",
         "https://www.24sata.hr/feeds/sport.xml",
         "https://gol.dnevnik.hr/feeds/category/4.xml",
         "https://sportnet.rtl.hr/rss/sve-vijesti/",
     ],
-    "Sport_World": [  # Interni naziv za svjetske sportske vijesti
+    "Sport_World": [
         "https://www.espn.com/espn/rss/news",
         "https://rss.nytimes.com/services/xml/rss/nyt/Sports.xml",
         "https://www.skysports.com/rss/0,20514,11979,00.xml",
@@ -80,7 +80,6 @@ RSS_FEEDS = {
     ],
 }
 
-# Izvorni jezik za svaku kategoriju (potrebno za prevođenje)
 IZVORNI_JEZIK = {
     "Hrvatska": "hr",
     "Svijet": "en",
@@ -92,7 +91,7 @@ IZVORNI_JEZIK = {
     "Mađarska": "hu",
     "Italija": "it",
     "Austrija": "de",
-    "Regija": "mixed",  # Nova kategorija s miješanim jezicima
+    "Regija": "mixed",
 }
 
 def ocisti_html(html_tekst):
@@ -100,12 +99,9 @@ def ocisti_html(html_tekst):
     if not html_tekst:
         return ""
     
-    # Koristi BeautifulSoup za čišćenje HTML-a
     soup = BeautifulSoup(html_tekst, 'html.parser')
     tekst = soup.get_text(separator=' ', strip=True)
-    
-    # Dodatno čišćenje
-    tekst = re.sub(r'\s+', ' ', tekst)  # Uklanja višestruke razmake
+    tekst = re.sub(r'\s+', ' ', tekst)
     tekst = tekst.strip()
     
     return tekst
@@ -120,11 +116,9 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
         if not feedovi:
             return None
         
-        # Rječnik za praćenje vijesti iz svakog izvora
         vijesti_po_izvoru = {}
         broj_feedova = len(feedovi)
         
-        # Dohvati vijesti iz svih feedova
         for feed_url in feedovi:
             try:
                 feed = feedparser.parse(feed_url)
@@ -134,7 +128,6 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
                 for entry in feed.entries:
                     naslov = entry.get('title', 'Naslov nije dostupan')
                     
-                    # Pokušaj dohvatiti opis na različite načine jer feedovi koriste različite formate
                     tekst = ''
                     if 'description' in entry:
                         tekst = entry.description
@@ -145,12 +138,10 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
                     else:
                         tekst = 'Opis nije dostupan'
                     
-                    # Očisti HTML tagove iz teksta
                     tekst = ocisti_html(tekst)
                     
-                    # Provjera da li vijest ima dovoljno sadržaja
                     if len(tekst) < 20 and 'nije dostupan' not in tekst:
-                        tekst = 'Sadržaj nije dostupan. Kliknite na link za više informacija.'
+                        tekst = 'Sadržaj nije dostupan.'
                     
                     link = entry.get('link', '#')
                     
@@ -165,24 +156,19 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
                 print(f"Greška pri dohvaćanju feeda {feed_url}: {str(e)}")
                 continue
         
-        # Uravnoteženi odabir vijesti iz svih izvora
+        # Balanced selection of news from all sources
         balansirane_vijesti = []
-        
-        # Odaberi samo aktivne izvore (one koji su vratili barem jednu vijest)
         aktivni_izvori = [izvor for izvor, vijesti in vijesti_po_izvoru.items() if vijesti]
         
         if not aktivni_izvori:
             return None
             
-        # Izračunaj koliko vijesti uzeti iz svakog izvora
         vijesti_po_aktivnom_izvoru = max(1, min(int(broj_vijesti / len(aktivni_izvori)), 2))
         
-        # Uzmi određeni broj vijesti iz svakog izvora
         for izvor in aktivni_izvori:
             vijesti_izvora = vijesti_po_izvoru[izvor][:vijesti_po_aktivnom_izvoru]
             balansirane_vijesti.extend(vijesti_izvora)
             
-        # Ako nemamo dovoljno vijesti, dodaj još iz izvora s najviše vijesti
         if len(balansirane_vijesti) < broj_vijesti:
             najveci_izvor = max(vijesti_po_izvoru.items(), key=lambda x: len(x[1]))[0]
             vec_dodane = sum(1 for v in balansirane_vijesti if v['izvor'] == najveci_izvor)
@@ -194,12 +180,54 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
                 dodatne_vijesti = vijesti_po_izvoru[najveci_izvor][vec_dodane:vec_dodane+dodaj_jos]
                 balansirane_vijesti.extend(dodatne_vijesti)
         
-        # Ograniči na traženi broj vijesti
         return balansirane_vijesti[:broj_vijesti]
     
     except Exception as e:
         print(f"Greška pri dohvaćanju RSS vijesti: {str(e)}")
         return None
+
+def generiraj_ai_sazetak(naslov, kratki_tekst):
+    """
+    Generates an AI-enhanced summary for Croatian news articles
+    """
+    if not ANTHROPIC_API_KEY:
+        print("⚠️ Cannot generate AI summary: ANTHROPIC_API_KEY not found")
+        return kratki_tekst
+    
+    try:
+        print(f"🤖 Generating AI-enhanced summary for: {naslov[:50]}...")
+        
+        client = ChatAnthropic(
+            anthropic_api_key=ANTHROPIC_API_KEY,
+            model_name="claude-3-haiku-20240307"
+        )
+        
+        prompt = f"""
+        Na temelju sljedećeg naslova i kratkog opisa hrvatskih vijesti, stvori detaljniji i informativan sažetak koji će čitatelju pružiti potpuniju sliku o događaju. 
+
+        Naslov: {naslov}
+        Kratki opis: {kratki_tekst}
+
+        Molim te:
+        1. Proširi informacije logično i prirodno
+        2. Dodaj kontekst koji bi mogao biti važan hrvatskim čitateljima
+        3. Zadrži faktičnost - ne izmišljaj nove činjenice
+        4. Piši na hrvatskom jeziku
+        5. Duljina: 150-300 riječi
+        6. Budi informativan i jasan
+
+        Odgovori samo proširenim sažetkom, bez dodatnih objašnjenja:
+        """
+        
+        response = client.invoke(prompt)
+        enhanced_summary = response.content.strip()
+        
+        print(f"✅ AI summary generated ({len(enhanced_summary)} characters)")
+        return enhanced_summary
+        
+    except Exception as e:
+        print(f"❌ Failed to generate AI summary: {e}")
+        return kratki_tekst  # Return original text if AI enhancement fails
 
 def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
     """
@@ -207,30 +235,24 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
     """
     print(f"🔄 prevedi_vijesti called with {len(vijesti) if vijesti else 0} articles, source language: {izvorni_jezik}")
     
-    # If no news, return None
     if vijesti is None:
         print("⚠️ No news to translate")
         return None
         
-    # If news are already in Croatian, don't translate
     if izvorni_jezik == "hr":
         print(f"✅ News already in Croatian, returning {len(vijesti)} articles")
         return vijesti
     
-    # If mixed language, skip translation
     if izvorni_jezik == "mixed":
         print(f"✅ Mixed language content, returning {len(vijesti)} articles without translation")
         return vijesti
     
-    # Check if API key is available
     if not ANTHROPIC_API_KEY:
         print("❌ Cannot translate: ANTHROPIC_API_KEY not found")
-        print("Please check your .env file contains: ANTHROPIC_API_KEY=your-key-here")
-        return vijesti  # Return original news if no API key
+        return vijesti
     
     try:
         print(f"🔄 Starting translation of {len(vijesti)} articles from {izvorni_jezik} to {ciljni_jezik}")
-        print(f"Using API key: {ANTHROPIC_API_KEY[:15]}...")
         
         client = ChatAnthropic(
             anthropic_api_key=ANTHROPIC_API_KEY,
@@ -245,7 +267,6 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
             naslov = vijest['naslov']
             tekst = vijest['tekst']
             
-            # Create a more specific prompt
             prompt = f"""
             Prevedi sljedeći naslov i tekst vijesti s {izvorni_jezik} jezika na hrvatski jezik. 
             Zadrži sve informacije i stil, samo prevedi sadržaj. Budi precizan i prirodan.
@@ -264,11 +285,9 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
                 prijevod = odgovor.content
                 print(f"✅ Got translation response for article {i+1}")
                 
-                # Parse the translated title and text
-                prevedeni_naslov = naslov  # Default fallback
-                prevedeni_tekst = tekst    # Default fallback
+                prevedeni_naslov = naslov
+                prevedeni_tekst = tekst
                 
-                # Extract translated titlevenv
                 if "NASLOV:" in prijevod:
                     lines = prijevod.split("\n")
                     for line in lines:
@@ -276,7 +295,6 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
                             prevedeni_naslov = line.replace("NASLOV:", "").strip()
                             break
                 
-                # Extract translated text
                 if "TEKST:" in prijevod:
                     tekst_start = prijevod.find("TEKST:")
                     if tekst_start != -1:
@@ -293,7 +311,6 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
                 
             except Exception as article_error:
                 print(f"❌ Failed to translate article {i+1}: {article_error}")
-                # Keep original article if translation fails
                 prevedene_vijesti.append({
                     'naslov': naslov,
                     'tekst': tekst,
@@ -306,30 +323,100 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
         
     except Exception as e:
         print(f"❌ Translation service failed: {str(e)}")
-        print("📝 Returning original articles without translation")
-        return vijesti  # Return original news if translation fails
-    
+        return vijesti
+
 def generiraj_hrvatska_vijesti():
-    """Dohvaća najnovije vijesti iz Hrvatske iz RSS feedova"""
+    """
+    Dohvaća najnovije vijesti iz Hrvatske i stvara AI-poboljšane sažetke
+    """
     try:
-        return dohvati_vijesti_iz_rss("Hrvatska")
+        print("🇭🇷 Fetching Croatian news...")
+        vijesti = dohvati_vijesti_iz_rss("Hrvatska")
+        
+        if not vijesti:
+            print("❌ No Croatian news fetched")
+            return None
+        
+        print(f"📰 Fetched {len(vijesti)} Croatian news articles")
+        print("🤖 Starting AI enhancement for Croatian articles...")
+        
+        # Enhance Croatian articles with AI-generated summaries
+        poboljsane_vijesti = []
+        
+        for i, vijest in enumerate(vijesti):
+            print(f"🤖 Enhancing article {i+1}/{len(vijesti)}: {vijest['naslov'][:50]}...")
+            
+            # Generate AI-enhanced summary
+            ai_summary = generiraj_ai_sazetak(vijest['naslov'], vijest['tekst'])
+            
+            # Create enhanced article with no external link
+            poboljsana_vijest = {
+                'naslov': vijest['naslov'],
+                'tekst': ai_summary,  # Use AI-enhanced summary instead of original short text
+                'izvor': vijest['izvor'] + " (AI-poboljšano)",
+                'link': None  # Remove external link for Croatian news
+            }
+            
+            poboljsane_vijesti.append(poboljsana_vijest)
+            print(f"✅ Article {i+1} enhanced successfully")
+        
+        print(f"✅ Croatian news enhancement completed: {len(poboljsane_vijesti)} articles")
+        return poboljsane_vijesti
+        
     except Exception as e:
-        raise Exception(f"Greška pri generiranju vijesti iz Hrvatske: {str(e)}")
+        print(f"❌ Error generating Croatian news: {str(e)}")
+        raise Exception(f"Greška pri generiranju hrvatskih vijesti: {str(e)}")
 
 def generiraj_svijet_vijesti():
     """Dohvaća i prevodi najnovije svjetske vijesti iz RSS feedova"""
     try:
+        print("🌍 Fetching world news...")
         vijesti = dohvati_vijesti_iz_rss("Svijet")
-        return prevedi_vijesti(vijesti, "en", "hr")
+        
+        if not vijesti:
+            print("❌ No world news fetched")
+            return None
+            
+        print(f"📰 Fetched {len(vijesti)} world news articles")
+        print("🔄 Starting translation to Croatian...")
+        
+        translated_news = prevedi_vijesti(vijesti, "en", "hr")
+        
+        if translated_news:
+            print(f"✅ World news translation completed: {len(translated_news)} articles")
+        else:
+            print("❌ World news translation failed")
+            
+        return translated_news
+        
     except Exception as e:
+        print(f"❌ Error generating world news: {str(e)}")
         raise Exception(f"Greška pri generiranju svjetskih vijesti: {str(e)}")
 
 def generiraj_ekonomija_vijesti():
     """Dohvaća i prevodi najnovije ekonomske vijesti iz RSS feedova"""
     try:
+        print("💼 Fetching economy news...")
         vijesti = dohvati_vijesti_iz_rss("Ekonomija", broj_vijesti=7)
-        return prevedi_vijesti(vijesti, "en", "hr")
+        
+        if not vijesti:
+            print("❌ No economy news fetched")
+            return None
+            
+        print(f"📰 Fetched {len(vijesti)} economy news articles")
+        print("🔄 Starting translation to Croatian...")
+        
+        translated_news = prevedi_vijesti(vijesti, "en", "hr")
+        
+        if translated_news:
+            print(f"✅ Economy news translation completed: {len(translated_news)} articles")
+        else:
+            print("❌ Economy news translation failed")
+            
+        return translated_news
+        
     except Exception as e:
+        print(f"❌ Error generating economy news: {str(e)}")
         raise Exception(f"Greška pri generiranju ekonomskih vijesti: {str(e)}")
 
 def generiraj_sport_vijesti():
@@ -338,28 +425,42 @@ def generiraj_sport_vijesti():
     Ukupno 10 vijesti (5 HR + 5 svjetskih, prevedenih)
     """
     try:
-        # Dohvaćamo hrvatske sportske vijesti (5)
+        print("⚽ Fetching sports news...")
+        
+        # Fetch Croatian sports news (5)
+        print("🇭🇷 Fetching Croatian sports news...")
         hr_vijesti = dohvati_vijesti_iz_rss("Sport_HR", broj_vijesti=5)
         
-        # Dohvaćamo svjetske sportske vijesti (5) i prevodimo ih
+        # Fetch world sports news (5) and translate them
+        print("🌍 Fetching world sports news...")
         world_vijesti = dohvati_vijesti_iz_rss("Sport_World", broj_vijesti=5)
-        prevedene_world_vijesti = prevedi_vijesti(world_vijesti, "en", "hr")
         
-        # Spajamo dvije liste vijesti
+        if world_vijesti:
+            print("🔄 Translating world sports news...")
+            prevedene_world_vijesti = prevedi_vijesti(world_vijesti, "en", "hr")
+        else:
+            prevedene_world_vijesti = None
+        
+        # Combine both lists
         sve_vijesti = []
         
         if hr_vijesti:
+            print(f"✅ Added {len(hr_vijesti)} Croatian sports articles")
             sve_vijesti.extend(hr_vijesti)
             
         if prevedene_world_vijesti:
+            print(f"✅ Added {len(prevedene_world_vijesti)} translated world sports articles")
             sve_vijesti.extend(prevedene_world_vijesti)
             
-        # Ako nemamo nijednu vijest, vraćamo None
         if not sve_vijesti:
+            print("❌ No sports news available")
             return None
             
+        print(f"✅ Sports news completed: {len(sve_vijesti)} total articles")
         return sve_vijesti
+        
     except Exception as e:
+        print(f"❌ Error generating sports news: {str(e)}")
         raise Exception(f"Greška pri generiranju sportskih vijesti: {str(e)}")
 
 def generiraj_regija_vijesti():
@@ -368,6 +469,7 @@ def generiraj_regija_vijesti():
     Po 2 najvažnije vijesti iz svake zemlje (ukupno 8)
     """
     try:
+        print("🏛️ Fetching regional news...")
         sve_vijesti = []
         zemlje = {
             "Slovenija": ("sl", "Slovenija"),
@@ -377,33 +479,41 @@ def generiraj_regija_vijesti():
         }
         
         for zemlja, (jezik, naziv) in zemlje.items():
-            # Dohvati 4 vijesti iz svake zemlje za bolji odabir
+            print(f"🔄 Fetching news from {naziv}...")
+            
             vijesti = dohvati_vijesti_iz_rss(zemlja, broj_vijesti=4)
             
             if vijesti:
-                # Prevedi vijesti
+                print(f"📰 Fetched {len(vijesti)} articles from {naziv}")
+                print(f"🔄 Translating {naziv} news to Croatian...")
+                
                 prevedene_vijesti = prevedi_vijesti(vijesti, jezik, "hr")
                 
                 if prevedene_vijesti:
-                    # Uzmi prve 2 vijesti
                     najvaznije_vijesti = prevedene_vijesti[:2]
                     
-                    # Dodaj oznaku zemlje u izvor
                     for vijest in najvaznije_vijesti:
                         vijest['izvor'] = f"[{naziv}] {vijest['izvor']}"
                     
                     sve_vijesti.extend(najvaznije_vijesti)
+                    print(f"✅ Added {len(najvaznije_vijesti)} articles from {naziv}")
+                else:
+                    print(f"❌ Translation failed for {naziv}")
+            else:
+                print(f"❌ No articles fetched from {naziv}")
         
-        # Osiguraj se da ukupno ne vraćamo više od 8 vijesti
         if len(sve_vijesti) > 8:
             sve_vijesti = sve_vijesti[:8]
         
-        # Ako nemamo nijednu vijest, vraćamo None
         if not sve_vijesti:
+            print("❌ No regional news available")
             return None
             
+        print(f"✅ Regional news completed: {len(sve_vijesti)} total articles")
         return sve_vijesti
+        
     except Exception as e:
+        print(f"❌ Error generating regional news: {str(e)}")
         raise Exception(f"Greška pri generiranju regionalnih vijesti: {str(e)}")
 
 def generiraj_vijesti(kategorija, spinner_callback=None):
@@ -411,10 +521,8 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
     Generira vijesti prema odabranoj kategoriji.
     """
     try:
-        # Dohvaćanje današnjeg datuma
         danas = datetime.datetime.now().strftime("%d.%m.%Y")
         
-        # Mapping stare kategorije u nove (za kompatibilnost)
         kategorija_mapping = {
             "Hrvatske vijesti": "Hrvatska",
             "Svjetske vijesti": "Svijet",
@@ -427,13 +535,12 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             "Austrijske vijesti": "Regija"
         }
         
-        # Provjeri da li je kategorija u starom formatu i pretvori je
         if kategorija in kategorija_mapping:
             kategorija = kategorija_mapping[kategorija]
         
-        # Generiranje vijesti ovisno o kategoriji
+        # Generate news based on category
         if kategorija == "Hrvatska":
-            vijesti = generiraj_hrvatska_vijesti()
+            vijesti = generiraj_hrvatska_vijesti()  # Uses AI-enhanced summaries
             filename_prefix = "hrvatska"
         elif kategorija == "Svijet":
             vijesti = generiraj_svijet_vijesti()
@@ -450,22 +557,23 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         else:
             return f"Nepoznata kategorija: {kategorija}", None
         
-        # Provjera jesu li vijesti dostupne
         if vijesti is None:
             return f"Trenutno nije moguće dohvatiti vijesti iz kategorije {kategorija}. Molimo pokušajte kasnije.", None
         
-        # Formatiranje vijesti za prikaz
+        # Format news for display
         rezultat = ""
         for vijest in vijesti:
             rezultat += f"NASLOV: {vijest['naslov']}\n"
             rezultat += f"{vijest['tekst']}\n"
-            rezultat += f"Izvor: {vijest['izvor']} - {vijest['link']}\n\n"
+            if vijest.get('link'):  # Only add link if it exists
+                rezultat += f"Izvor: {vijest['izvor']} - {vijest['link']}\n\n"
+            else:
+                rezultat += f"Izvor: {vijest['izvor']}\n\n"
         
-        # Kreiranje direktorija za vijesti ako ne postoji
+        # Save to file
         if not os.path.exists("vijesti"):
             os.makedirs("vijesti")
         
-        # Spremanje vijesti u datoteku
         filename = f"vijesti/{filename_prefix}_{datetime.datetime.now().strftime('%Y-%m-%d')}.txt"
         with open(filename, "w", encoding="utf-8") as file:
             file.write(f"{kategorija.upper()} ZA {danas}\n\n")
@@ -487,11 +595,9 @@ def parse_news_content(content):
         line = lines[i].strip()
         
         if line.startswith('NASLOV:'):
-            # Save previous article if exists
             if current_article:
                 articles.append(current_article)
             
-            # Start new article
             current_article = {
                 'naslov': line.replace('NASLOV:', '').strip(),
                 'tekst': '',
@@ -500,10 +606,9 @@ def parse_news_content(content):
             }
             i += 1
             
-            # Get article text (everything until "Izvor:")
             article_text = []
             while i < len(lines) and not lines[i].strip().startswith('Izvor:'):
-                if lines[i].strip():  # Skip empty lines
+                if lines[i].strip():
                     article_text.append(lines[i].strip())
                 i += 1
             
@@ -518,12 +623,11 @@ def parse_news_content(content):
                     current_article['link'] = source_parts[1].strip()
                 else:
                     current_article['izvor'] = source_line
-                    current_article['link'] = '#'
+                    current_article['link'] = None  # No link for AI-enhanced articles
             i += 1
         else:
             i += 1
     
-    # Don't forget the last article
     if current_article:
         articles.append(current_article)
     

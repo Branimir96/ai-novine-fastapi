@@ -61,6 +61,7 @@
 
     .status-fresh { background: #28a745; }
     .status-cache { background: #17a2b8; }
+    .status-ai-enhanced { background: #9c27b0; }
 
     .status-time {
         color: #6c757d;
@@ -163,6 +164,10 @@
         font-weight: 500;
     }
 
+    .source-badge.ai-enhanced {
+        background: linear-gradient(45deg, #9c27b0, #673ab7);
+    }
+
     .read-link {
         background: linear-gradient(45deg, #28a745, #20c997);
         color: white;
@@ -181,6 +186,16 @@
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         color: white;
         text-decoration: none;
+    }
+
+    .full-content-note {
+        background: linear-gradient(45deg, #9c27b0, #673ab7);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        display: inline-block;
     }
 
     .expand-button {
@@ -329,7 +344,7 @@
 
 <!-- Category Header -->
 {% set category_config = {
-    'Hrvatska': {'color': '#FF6B6B', 'icon': '🇭🇷', 'desc': 'Najnovije vijesti iz domaćih medija'},
+    'Hrvatska': {'color': '#FF6B6B', 'icon': '🇭🇷', 'desc': 'Najnovije vijesti iz domaćih medija (AI-poboljšano)'},
     'Svijet': {'color': '#4ECDC4', 'icon': '🌍', 'desc': 'Međunarodne vijesti prevedene na hrvatski'},
     'Ekonomija': {'color': '#45B7D1', 'icon': '💼', 'desc': 'Poslovne i ekonomske vijesti'},
     'Sport': {'color': '#96CEB4', 'icon': '⚽', 'desc': 'Sportske vijesti iz Hrvatske i svijeta'},
@@ -347,7 +362,9 @@
 <div class="status-bar">
     <div class="status-info">
         <div class="status-badges">
-            {% if cache_status == 'fresh_fetch' %}
+            {% if category == 'Hrvatska' %}
+            <div class="status-badge status-ai-enhanced">🤖 AI-poboljšano</div>
+            {% elif cache_status == 'fresh_fetch' %}
             <div class="status-badge status-fresh">🔄 Najnovije vijesti</div>
             {% else %}
             <div class="status-badge status-cache">💾 Iz cache</div>
@@ -375,6 +392,9 @@
 {% if articles %}
 <div class="articles-count">
     📊 Ukupno {{ articles|length }} {{ 'članak' if articles|length == 1 else ('članka' if articles|length < 5 else 'članaka') }}
+    {% if category == 'Hrvatska' %}
+    <br><small style="opacity: 0.9;">🤖 Svi članci poboljšani pomoću AI tehnologije</small>
+    {% endif %}
 </div>
 {% endif %}
 
@@ -389,32 +409,48 @@
         <!-- Article preview text -->
         <div class="article-preview">
             {% set article_text = article.tekst|string %}
-            {% if article_text|length > 300 %}
-                {{ article_text[:300] }}...
-            {% else %}
+            {% if category == 'Hrvatska' %}
+                <!-- For Croatian news, show full AI-enhanced content -->
                 {{ article_text }}
+            {% else %}
+                <!-- For other categories, show preview as before -->
+                {% if article_text|length > 300 %}
+                    {{ article_text[:300] }}...
+                {% else %}
+                    {{ article_text }}
+                {% endif %}
             {% endif %}
         </div>
         
         <!-- Article footer -->
         <div class="article-footer">
             <div class="article-meta">
-                <div class="source-badge">
+                <div class="source-badge {% if 'AI-poboljšano' in article.izvor %}ai-enhanced{% endif %}">
                     📍 {{ article.izvor }}
                 </div>
-                {% if article.link and article.link != '#' %}
-                <a href="{{ article.link }}" target="_blank" class="read-link">📖 Čitaj više</a>
+                
+                {% if category == 'Hrvatska' %}
+                    <!-- Croatian news - show full content note instead of external link -->
+                    <div class="full-content-note">
+                        ✅ Potpun sadržaj
+                    </div>
+                {% elif article.link and article.link != '#' and article.link != None %}
+                    <!-- Other categories - show external link -->
+                    <a href="{{ article.link }}" target="_blank" class="read-link">📖 Čitaj više</a>
                 {% endif %}
             </div>
             
-            <!-- Show full text toggle -->
-            {% if article_text|length > 300 %}
-            <button onclick="toggleFullText(this)" class="expand-button" data-full-text="{{ article_text|e }}">
-                ▼ Prikaži cijeli tekst
-            </button>
-            <div class="full-text" style="border-left-color: {{ config.color }};">
-                {{ article_text }}
-            </div>
+            <!-- Show full text toggle (only for non-Croatian news) -->
+            {% if category != 'Hrvatska' %}
+                {% set article_text = article.tekst|string %}
+                {% if article_text|length > 300 %}
+                <button onclick="toggleFullText(this)" class="expand-button" data-full-text="{{ article_text|e }}">
+                    ▼ Prikaži cijeli tekst
+                </button>
+                <div class="full-text" style="border-left-color: {{ config.color }};">
+                    {{ article_text }}
+                </div>
+                {% endif %}
             {% endif %}
         </div>
     </div>
@@ -483,7 +519,7 @@ async function refreshNews() {
     }
 }
 
-// Function to toggle full text display with smooth animation
+// Function to toggle full text display with smooth animation (for non-Croatian news)
 function toggleFullText(button) {
     const fullTextDiv = button.nextElementSibling;
     const isHidden = fullTextDiv.style.display === 'none' || fullTextDiv.style.display === '';
