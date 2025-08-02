@@ -355,6 +355,22 @@
     .ekonomija { background: #45B7D1; border-left-color: #45B7D1; }
     .sport { background: #96CEB4; border-left-color: #96CEB4; }
     .regija { background: #FECA57; border-left-color: #FECA57; }
+
+    /* NUCLEAR OPTION: Force remove all hover effects */
+    .article-item,
+    .article-item:hover,
+    .article-item:focus,
+    .article-item:active {
+        transform: none !important;
+        background: linear-gradient(145deg, #ff6b6b, #ff5252) !important;
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2) !important;
+        transition: none !important;
+    }
+
+    /* Ensure no global transitions affect articles */
+    .article-item * {
+        transition: none !important;
+    }
 </style>
 
 <!-- Category Header -->
