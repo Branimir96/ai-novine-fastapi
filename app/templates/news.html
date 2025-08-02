@@ -160,7 +160,6 @@
     }
 
     .source-badge {
-        background: linear-gradient(45deg, #d32f2f, #b71c1c);
         color: white;
         padding: 0.3rem 0.8rem;
         border-radius: 20px;
@@ -168,12 +167,18 @@
         font-weight: 500;
     }
 
+    /* Category-specific badge colors */
+    .hrvatska .source-badge { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
+    .svijet .source-badge { background: linear-gradient(45deg, #00695c, #004d40); }
+    .ekonomija .source-badge { background: linear-gradient(45deg, #4c51bf, #553c9a); }
+    .sport .source-badge { background: linear-gradient(45deg, #2f855a, #276749); }
+    .regija .source-badge { background: linear-gradient(45deg, #c05621, #9c4221); }
+
     .source-badge.ai-enhanced {
         background: linear-gradient(45deg, #880e4f, #ad1457);
     }
 
     .read-link {
-        background: linear-gradient(45deg, #d32f2f, #b71c1c);
         color: white;
         padding: 0.6rem 1.2rem;
         border-radius: 25px;
@@ -185,16 +190,29 @@
         display: inline-block;
     }
 
+    /* Category-specific read link colors */
+    .hrvatska .read-link { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
+    .svijet .read-link { background: linear-gradient(45deg, #00695c, #004d40); }
+    .ekonomija .read-link { background: linear-gradient(45deg, #4c51bf, #553c9a); }
+    .sport .read-link { background: linear-gradient(45deg, #2f855a, #276749); }
+    .regija .read-link { background: linear-gradient(45deg, #c05621, #9c4221); }
+
     .read-link.ai-enhanced {
         background: linear-gradient(45deg, #880e4f, #ad1457);
     }
 
     .read-link:hover {
         transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4);
         color: white;
         text-decoration: none;
     }
+
+    /* Category-specific hover effects for read links */
+    .hrvatska .read-link:hover { box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4); }
+    .svijet .read-link:hover { box-shadow: 0 4px 12px rgba(0, 105, 92, 0.4); }
+    .ekonomija .read-link:hover { box-shadow: 0 4px 12px rgba(76, 81, 191, 0.4); }
+    .sport .read-link:hover { box-shadow: 0 4px 12px rgba(47, 133, 90, 0.4); }
+    .regija .read-link:hover { box-shadow: 0 4px 12px rgba(192, 86, 33, 0.4); }
 
     .read-link.ai-enhanced:hover {
         box-shadow: 0 4px 12px rgba(136, 14, 79, 0.4);
@@ -232,9 +250,9 @@
     .full-text {
         margin-top: 1rem;
         padding: 1rem;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.15);
         border-radius: 8px;
-        border-left: 3px solid white;
+        border-left: 3px solid rgba(255, 255, 255, 0.8);
         line-height: 1.6;
         font-size: 0.95rem;
         color: white;
@@ -362,9 +380,38 @@
     .article-item:focus,
     .article-item:active {
         transform: none !important;
-        background: linear-gradient(145deg, #ff6b6b, #ff5252) !important;
-        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2) !important;
         transition: none !important;
+    }
+
+    /* Maintain category-specific colors on hover */
+    .hrvatska .article-item,
+    .hrvatska .article-item:hover {
+        background: linear-gradient(145deg, #ff6b6b, #ee5a52) !important;
+        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2) !important;
+    }
+
+    .svijet .article-item,
+    .svijet .article-item:hover {
+        background: linear-gradient(145deg, #4ecdc4, #26a69a) !important;
+        box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2) !important;
+    }
+
+    .ekonomija .article-item,
+    .ekonomija .article-item:hover {
+        background: linear-gradient(145deg, #667eea, #5a67d8) !important;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+    }
+
+    .sport .article-item,
+    .sport .article-item:hover {
+        background: linear-gradient(145deg, #48bb78, #38a169) !important;
+        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.2) !important;
+    }
+
+    .regija .article-item,
+    .regija .article-item:hover {
+        background: linear-gradient(145deg, #ed8936, #dd6b20) !important;
+        box-shadow: 0 4px 12px rgba(237, 137, 54, 0.2) !important;
     }
 
     /* Ensure no global transitions affect articles */
