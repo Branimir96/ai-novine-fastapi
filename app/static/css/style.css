@@ -11,9 +11,20 @@
     animation: spin 1s linear infinite;
 }
 
-/* Smooth transitions */
+/* Smooth transitions - but exclude article items from hover effects */
 * {
     transition: all 0.3s ease;
+}
+
+/* Disable hover effects for articles specifically */
+.article-item {
+    transition: none !important;
+}
+
+.article-item:hover {
+    transform: none !important;
+    background: inherit !important;
+    box-shadow: inherit !important;
 }
 
 /* Custom scrollbar */
