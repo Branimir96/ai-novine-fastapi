@@ -436,16 +436,6 @@
     <p>{{ config.desc }}</p>
 </div>
 
-<!-- Articles Count -->
-{% if articles %}
-<div class="articles-count">
-    📊 Ukupno {{ articles|length }} {{ 'članak' if articles|length == 1 else ('članka' if articles|length < 5 else 'članaka') }}
-    {% if category == 'Hrvatska' %}
-    <br><small style="opacity: 0.9;">🤖 Svi članci poboljšani pomoću AI tehnologije</small>
-    {% endif %}
-</div>
-{% endif %}
-
 <!-- News Articles -->
 {% if articles %}
     {% for article in articles %}
@@ -505,6 +495,14 @@
         </div>
     </div>
     {% endfor %}
+
+    <!-- Articles Count - moved here after articles -->
+    <div class="articles-count">
+        📊 Ukupno {{ articles|length }} {{ 'članak' if articles|length == 1 else ('članka' if articles|length < 5 else 'članaka') }}
+        {% if category == 'Hrvatska' %}
+        <br><small style="opacity: 0.9;">🤖 Svi članci poboljšani pomoću AI tehnologije</small>
+        {% endif %}
+    </div>
 {% else %}
     <!-- No articles message -->
     <div class="no-articles">
