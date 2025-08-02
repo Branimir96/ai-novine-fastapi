@@ -349,10 +349,18 @@ def generiraj_hrvatska_vijesti():
             # Generate AI-enhanced summary
             ai_summary = generiraj_ai_sazetak(vijest['naslov'], vijest['tekst'])
             
-            # Create enhanced article with no external link
+            # Create short preview (max 140 characters)
+            original_text = vijest['tekst']
+            if len(original_text) > 140:
+                short_preview = original_text[:137] + "..."
+            else:
+                short_preview = original_text
+            
+            # Create enhanced article with short preview and AI-enhanced full content
             poboljsana_vijest = {
                 'naslov': vijest['naslov'],
-                'tekst': ai_summary,  # Use AI-enhanced summary instead of original short text
+                'tekst': short_preview,  # Short preview for initial display
+                'ai_enhanced_content': ai_summary,  # Full AI-enhanced content for expansion
                 'izvor': vijest['izvor'] + " (AI-poboljšano)",
                 'link': None  # Remove external link for Croatian news
             }
@@ -565,6 +573,11 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         for vijest in vijesti:
             rezultat += f"NASLOV: {vijest['naslov']}\n"
             rezultat += f"{vijest['tekst']}\n"
+            
+            # Add AI-enhanced content if available (for Croatian news)
+            if vijest.get('ai_enhanced_content'):
+                rezultat += f"AI_ENHANCED: {vijest['ai_enhanced_content']}\n"
+            
             if vijest.get('link'):  # Only add link if it exists
                 rezultat += f"Izvor: {vijest['izvor']} - {vijest['link']}\n\n"
             else:
@@ -601,18 +614,30 @@ def parse_news_content(content):
             current_article = {
                 'naslov': line.replace('NASLOV:', '').strip(),
                 'tekst': '',
+                'ai_enhanced_content': '',
                 'izvor': '',
                 'link': ''
             }
             i += 1
             
             article_text = []
+            ai_content = []
+            in_ai_section = False
+            
             while i < len(lines) and not lines[i].strip().startswith('Izvor:'):
-                if lines[i].strip():
-                    article_text.append(lines[i].strip())
+                line_content = lines[i].strip()
+                if line_content:
+                    if line_content.startswith('AI_ENHANCED:'):
+                        in_ai_section = True
+                        ai_content.append(line_content.replace('AI_ENHANCED:', '').strip())
+                    elif in_ai_section:
+                        ai_content.append(line_content)
+                    else:
+                        article_text.append(line_content)
                 i += 1
             
             current_article['tekst'] = ' '.join(article_text)
+            current_article['ai_enhanced_content'] = ' '.join(ai_content)
             
             # Get source info
             if i < len(lines) and lines[i].strip().startswith('Izvor:'):

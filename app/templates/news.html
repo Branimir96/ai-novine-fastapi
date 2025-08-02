@@ -181,11 +181,19 @@
         display: inline-block;
     }
 
+    .read-link.ai-enhanced {
+        background: linear-gradient(45deg, #9c27b0, #673ab7);
+    }
+
     .read-link:hover {
         transform: scale(1.02);
         box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
         color: white;
         text-decoration: none;
+    }
+
+    .read-link.ai-enhanced:hover {
+        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
     }
 
     .full-content-note {
@@ -409,16 +417,11 @@
         <!-- Article preview text -->
         <div class="article-preview">
             {% set article_text = article.tekst|string %}
-            {% if category == 'Hrvatska' %}
-                <!-- For Croatian news, show full AI-enhanced content -->
-                {{ article_text }}
+            <!-- Always show preview for all categories -->
+            {% if article_text|length > 300 %}
+                {{ article_text[:300] }}...
             {% else %}
-                <!-- For other categories, show preview as before -->
-                {% if article_text|length > 300 %}
-                    {{ article_text[:300] }}...
-                {% else %}
-                    {{ article_text }}
-                {% endif %}
+                {{ article_text }}
             {% endif %}
         </div>
         
@@ -429,10 +432,10 @@
                     📍 {{ article.izvor }}
                 </div>
                 
-                {% if category == 'Hrvatska' %}
-                    <!-- Croatian news - show full content note instead of external link -->
-                    <div class="full-content-note">
-                        ✅ Potpun sadržaj
+                {% if category == 'Hrvatska' and article.ai_enhanced_content %}
+                    <!-- Croatian news - show "Čitaj više" for AI-enhanced content -->
+                    <div class="read-link ai-enhanced" onclick="toggleAIContent(this)" style="cursor: pointer;">
+                        🤖 Čitaj više
                     </div>
                 {% elif article.link and article.link != '#' and article.link != None %}
                     <!-- Other categories - show external link -->
@@ -440,7 +443,14 @@
                 {% endif %}
             </div>
             
-            <!-- Show full text toggle (only for non-Croatian news) -->
+            <!-- AI-enhanced content for Croatian news -->
+            {% if category == 'Hrvatska' and article.ai_enhanced_content %}
+            <div class="full-text ai-enhanced-content" style="border-left-color: {{ config.color }}; display: none;" data-ai-content="{{ article.ai_enhanced_content|e }}">
+                {{ article.ai_enhanced_content }}
+            </div>
+            {% endif %}
+            
+            <!-- Show full text toggle (only for non-Croatian news with long content) -->
             {% if category != 'Hrvatska' %}
                 {% set article_text = article.tekst|string %}
                 {% if article_text|length > 300 %}
@@ -516,6 +526,33 @@ async function refreshNews() {
             button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
             button.classList.remove('loading');
         }, 3000);
+    }
+}
+
+// Function to toggle AI-enhanced content for Croatian news
+function toggleAIContent(button) {
+    const article = button.closest('.article-item');
+    const aiContentDiv = article.querySelector('.ai-enhanced-content');
+    const isHidden = aiContentDiv.style.display === 'none' || aiContentDiv.style.display === '';
+    
+    if (isHidden) {
+        // Show AI-enhanced content
+        aiContentDiv.style.display = 'block';
+        button.innerHTML = '🤖 Sakrij';
+        button.style.background = 'linear-gradient(45deg, #673ab7, #9c27b0)';
+        
+        // Smooth scroll to content
+        setTimeout(() => {
+            aiContentDiv.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'nearest' 
+            });
+        }, 100);
+    } else {
+        // Hide AI-enhanced content
+        aiContentDiv.style.display = 'none';
+        button.innerHTML = '🤖 Čitaj više';
+        button.style.background = 'linear-gradient(45deg, #9c27b0, #673ab7)';
     }
 }
 
