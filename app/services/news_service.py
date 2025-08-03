@@ -186,43 +186,65 @@ def dohvati_vijesti_iz_rss(kategorija, broj_vijesti=5):
         print(f"Greška pri dohvaćanju RSS vijesti: {str(e)}")
         return None
 
-def generiraj_ai_sazetak(naslov, kratki_tekst):
+def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_jezik="en"):
     """
-    Generates an AI-enhanced summary for Croatian news articles
+    Generates an AI-enhanced summary for news articles in all categories
     """
     if not ANTHROPIC_API_KEY:
         print("⚠️ Cannot generate AI summary: ANTHROPIC_API_KEY not found")
         return kratki_tekst
     
     try:
-        print(f"🤖 Generating AI-enhanced summary for: {naslov[:50]}...")
+        print(f"🤖 Generating AI-enhanced summary for: {naslov[:50]}... (Category: {kategorija})")
         
         client = ChatAnthropic(
             anthropic_api_key=ANTHROPIC_API_KEY,
             model_name="claude-3-haiku-20240307"
         )
         
+        # Create category-specific prompt
+        if kategorija == "Hrvatska":
+            context_prompt = "hrvatskih vijesti, dodaj kontekst koji bi mogao biti važan hrvatskim čitateljima"
+        elif kategorija == "Svijet":
+            context_prompt = "svjetskih vijesti prevedenih na hrvatski, objasni važnost za hrvatsku publiku"
+        elif kategorija == "Ekonomija":
+            context_prompt = "ekonomskih/poslovnih vijesti, objasni ekonomske implikacije"
+        elif kategorija == "Sport":
+            context_prompt = "sportskih vijesti, dodaj kontekst o sportskim postignućima i značaju"
+        elif kategorija == "Regija":
+            context_prompt = "regionalnih vijesti iz susjednih zemalja, objasni važnost za Hrvatsku"
+        else:
+            context_prompt = "vijesti, dodaj relevantni kontekst"
+        
+        # Adjust prompt based on source language
+        if izvorni_jezik == "hr":
+            language_instruction = "Poboljšaj i proširi postojeći hrvatski tekst"
+        else:
+            language_instruction = f"Prevedi s {izvorni_jezik} jezika na hrvatski i proširi"
+        
         prompt = f"""
-        Na temelju sljedećeg naslova i kratkog opisa hrvatskih vijesti, stvori detaljniji i informativan sažetak koji će čitatelju pružiti potpuniju sliku o događaju. 
+        Na temelju sljedećeg naslova i kratkog opisa {context_prompt}.
 
         Naslov: {naslov}
         Kratki opis: {kratki_tekst}
 
         Molim te:
-        1. Proširi informacije logično i prirodno
-        2. Dodaj kontekst koji bi mogao biti važan hrvatskim čitateljima
-        3. Zadrži faktičnost - ne izmišljaj nove činjenice
-        4. Piši na hrvatskom jeziku
-        5. Duljina: 150-300 riječi
-        6. Budi informativan i jasan
+        1. {language_instruction}
+        2. Proširi informacije logično i prirodno
+        3. Dodaj kontekst relevantan za temu i kategoriju {kategorija}
+        4. Zadrži faktičnost - ne izmišljaj nove činjenice
+        5. Piši na hrvatskom jeziku
+        6. Duljina: 200-400 riječi
+        7. Budi informativan i jasan
+        8. Struktura: uvod, glavne informacije, kontekst/zaključak
 
-        Odgovori samo proširenim sažetkom, bez dodatnih objašnjenja:
+        Odgovori samo proširenim sažetkom na hrvatskom jeziku, bez dodatnih objašnjenja:
         """
         
         response = client.invoke(prompt)
         enhanced_summary = response.content.strip()
         
-        print(f"✅ AI summary generated ({len(enhanced_summary)} characters)")
+        print(f"✅ AI summary generated ({len(enhanced_summary)} characters) for {kategorija}")
         return enhanced_summary
         
     except Exception as e:
@@ -325,6 +347,50 @@ def prevedi_vijesti(vijesti, izvorni_jezik, ciljni_jezik="hr"):
         print(f"❌ Translation service failed: {str(e)}")
         return vijesti
 
+def stvori_ai_poboljsane_vijesti(vijesti, kategorija, izvorni_jezik="en"):
+    """
+    Creates AI-enhanced articles with short previews and full AI summaries for any category
+    """
+    if not vijesti:
+        return None
+    
+    print(f"🤖 Creating AI-enhanced articles for {kategorija} ({len(vijesti)} articles)")
+    
+    poboljsane_vijesti = []
+    
+    for i, vijest in enumerate(vijesti):
+        print(f"🤖 Enhancing article {i+1}/{len(vijesti)}: {vijest['naslov'][:50]}...")
+        
+        # Generate AI-enhanced summary
+        ai_summary = generiraj_ai_sazetak(
+            vijest['naslov'], 
+            vijest['tekst'], 
+            kategorija=kategorija,
+            izvorni_jezik=izvorni_jezik
+        )
+        
+        # Create short preview (max 140 characters)
+        original_text = vijest['tekst']
+        if len(original_text) > 140:
+            short_preview = original_text[:137] + "..."
+        else:
+            short_preview = original_text
+        
+        # Create enhanced article with short preview and AI-enhanced full content
+        poboljsana_vijest = {
+            'naslov': vijest['naslov'],
+            'tekst': short_preview,  # Short preview for initial display
+            'ai_enhanced_content': ai_summary,  # Full AI-enhanced content for expansion
+            'izvor': vijest['izvor'] + " (AI-poboljšano)",
+            'original_link': vijest['link']  # Keep original link for external access
+        }
+        
+        poboljsane_vijesti.append(poboljsana_vijest)
+        print(f"✅ Article {i+1} enhanced successfully")
+    
+    print(f"✅ {kategorija} AI enhancement completed: {len(poboljsane_vijesti)} articles")
+    return poboljsane_vijesti
+
 def generiraj_hrvatska_vijesti():
     """
     Dohvaća najnovije vijesti iz Hrvatske i stvara AI-poboljšane sažetke
@@ -338,45 +404,16 @@ def generiraj_hrvatska_vijesti():
             return None
         
         print(f"📰 Fetched {len(vijesti)} Croatian news articles")
-        print("🤖 Starting AI enhancement for Croatian articles...")
         
-        # Enhance Croatian articles with AI-generated summaries
-        poboljsane_vijesti = []
-        
-        for i, vijest in enumerate(vijesti):
-            print(f"🤖 Enhancing article {i+1}/{len(vijesti)}: {vijest['naslov'][:50]}...")
-            
-            # Generate AI-enhanced summary
-            ai_summary = generiraj_ai_sazetak(vijest['naslov'], vijest['tekst'])
-            
-            # Create short preview (max 140 characters)
-            original_text = vijest['tekst']
-            if len(original_text) > 140:
-                short_preview = original_text[:137] + "..."
-            else:
-                short_preview = original_text
-            
-            # Create enhanced article with short preview and AI-enhanced full content
-            poboljsana_vijest = {
-                'naslov': vijest['naslov'],
-                'tekst': short_preview,  # Short preview for initial display
-                'ai_enhanced_content': ai_summary,  # Full AI-enhanced content for expansion
-                'izvor': vijest['izvor'] + " (AI-poboljšano)",
-                'link': None  # Remove external link for Croatian news
-            }
-            
-            poboljsane_vijesti.append(poboljsana_vijest)
-            print(f"✅ Article {i+1} enhanced successfully")
-        
-        print(f"✅ Croatian news enhancement completed: {len(poboljsane_vijesti)} articles")
-        return poboljsane_vijesti
+        # Create AI-enhanced articles
+        return stvori_ai_poboljsane_vijesti(vijesti, "Hrvatska", "hr")
         
     except Exception as e:
         print(f"❌ Error generating Croatian news: {str(e)}")
         raise Exception(f"Greška pri generiranju hrvatskih vijesti: {str(e)}")
 
 def generiraj_svijet_vijesti():
-    """Dohvaća i prevodi najnovije svjetske vijesti iz RSS feedova"""
+    """Dohvaća, prevodi i AI-poboljšava najnovije svjetske vijesti iz RSS feedova"""
     try:
         print("🌍 Fetching world news...")
         vijesti = dohvati_vijesti_iz_rss("Svijet")
@@ -388,21 +425,23 @@ def generiraj_svijet_vijesti():
         print(f"📰 Fetched {len(vijesti)} world news articles")
         print("🔄 Starting translation to Croatian...")
         
+        # First translate
         translated_news = prevedi_vijesti(vijesti, "en", "hr")
         
-        if translated_news:
-            print(f"✅ World news translation completed: {len(translated_news)} articles")
-        else:
+        if not translated_news:
             print("❌ World news translation failed")
-            
-        return translated_news
+            return None
+        
+        # Then create AI-enhanced summaries
+        print("🤖 Creating AI-enhanced summaries for world news...")
+        return stvori_ai_poboljsane_vijesti(translated_news, "Svijet", "en")
         
     except Exception as e:
         print(f"❌ Error generating world news: {str(e)}")
         raise Exception(f"Greška pri generiranju svjetskih vijesti: {str(e)}")
 
 def generiraj_ekonomija_vijesti():
-    """Dohvaća i prevodi najnovije ekonomske vijesti iz RSS feedova"""
+    """Dohvaća, prevodi i AI-poboljšava najnovije ekonomske vijesti iz RSS feedova"""
     try:
         print("💼 Fetching economy news...")
         vijesti = dohvati_vijesti_iz_rss("Ekonomija", broj_vijesti=7)
@@ -414,14 +453,16 @@ def generiraj_ekonomija_vijesti():
         print(f"📰 Fetched {len(vijesti)} economy news articles")
         print("🔄 Starting translation to Croatian...")
         
+        # First translate
         translated_news = prevedi_vijesti(vijesti, "en", "hr")
         
-        if translated_news:
-            print(f"✅ Economy news translation completed: {len(translated_news)} articles")
-        else:
+        if not translated_news:
             print("❌ Economy news translation failed")
-            
-        return translated_news
+            return None
+        
+        # Then create AI-enhanced summaries
+        print("🤖 Creating AI-enhanced summaries for economy news...")
+        return stvori_ai_poboljsane_vijesti(translated_news, "Ekonomija", "en")
         
     except Exception as e:
         print(f"❌ Error generating economy news: {str(e)}")
@@ -429,8 +470,8 @@ def generiraj_ekonomija_vijesti():
 
 def generiraj_sport_vijesti():
     """
-    Dohvaća kombinaciju hrvatskih i svjetskih sportskih vijesti
-    Ukupno 10 vijesti (5 HR + 5 svjetskih, prevedenih)
+    Dohvaća kombinaciju hrvatskih i svjetskih sportskih vijesti s AI poboljšanjima
+    Ukupno 10 vijesti (5 HR + 5 svjetskih, prevedenih i AI-poboljšanih)
     """
     try:
         print("⚽ Fetching sports news...")
@@ -443,28 +484,30 @@ def generiraj_sport_vijesti():
         print("🌍 Fetching world sports news...")
         world_vijesti = dohvati_vijesti_iz_rss("Sport_World", broj_vijesti=5)
         
+        sve_vijesti = []
+        
+        # Process Croatian sports (AI enhance directly)
+        if hr_vijesti:
+            print(f"🤖 AI-enhancing {len(hr_vijesti)} Croatian sports articles...")
+            hr_enhanced = stvori_ai_poboljsane_vijesti(hr_vijesti, "Sport", "hr")
+            if hr_enhanced:
+                sve_vijesti.extend(hr_enhanced)
+        
+        # Process world sports (translate first, then AI enhance)
         if world_vijesti:
             print("🔄 Translating world sports news...")
             prevedene_world_vijesti = prevedi_vijesti(world_vijesti, "en", "hr")
-        else:
-            prevedene_world_vijesti = None
-        
-        # Combine both lists
-        sve_vijesti = []
-        
-        if hr_vijesti:
-            print(f"✅ Added {len(hr_vijesti)} Croatian sports articles")
-            sve_vijesti.extend(hr_vijesti)
-            
-        if prevedene_world_vijesti:
-            print(f"✅ Added {len(prevedene_world_vijesti)} translated world sports articles")
-            sve_vijesti.extend(prevedene_world_vijesti)
+            if prevedene_world_vijesti:
+                print(f"🤖 AI-enhancing {len(prevedene_world_vijesti)} world sports articles...")
+                world_enhanced = stvori_ai_poboljsane_vijesti(prevedene_world_vijesti, "Sport", "en")
+                if world_enhanced:
+                    sve_vijesti.extend(world_enhanced)
             
         if not sve_vijesti:
             print("❌ No sports news available")
             return None
             
-        print(f"✅ Sports news completed: {len(sve_vijesti)} total articles")
+        print(f"✅ Sports news completed: {len(sve_vijesti)} total AI-enhanced articles")
         return sve_vijesti
         
     except Exception as e:
@@ -473,8 +516,8 @@ def generiraj_sport_vijesti():
 
 def generiraj_regija_vijesti():
     """
-    Dohvaća najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije
-    Po 2 najvažnije vijesti iz svake zemlje (ukupno 8)
+    Dohvaća najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije s AI poboljšanjima
+    Po 2 najvažnije vijesti iz svake zemlje (ukupno 8), sve AI-poboljšane
     """
     try:
         print("🏛️ Fetching regional news...")
@@ -498,13 +541,20 @@ def generiraj_regija_vijesti():
                 prevedene_vijesti = prevedi_vijesti(vijesti, jezik, "hr")
                 
                 if prevedene_vijesti:
+                    # Take top 2 articles
                     najvaznije_vijesti = prevedene_vijesti[:2]
                     
+                    # Add country prefix to source
                     for vijest in najvaznije_vijesti:
                         vijest['izvor'] = f"[{naziv}] {vijest['izvor']}"
                     
-                    sve_vijesti.extend(najvaznije_vijesti)
-                    print(f"✅ Added {len(najvaznije_vijesti)} articles from {naziv}")
+                    # AI-enhance the articles
+                    print(f"🤖 AI-enhancing {len(najvaznije_vijesti)} articles from {naziv}...")
+                    enhanced_articles = stvori_ai_poboljsane_vijesti(najvaznije_vijesti, "Regija", jezik)
+                    
+                    if enhanced_articles:
+                        sve_vijesti.extend(enhanced_articles)
+                        print(f"✅ Added {len(enhanced_articles)} AI-enhanced articles from {naziv}")
                 else:
                     print(f"❌ Translation failed for {naziv}")
             else:
@@ -517,7 +567,7 @@ def generiraj_regija_vijesti():
             print("❌ No regional news available")
             return None
             
-        print(f"✅ Regional news completed: {len(sve_vijesti)} total articles")
+        print(f"✅ Regional news completed: {len(sve_vijesti)} total AI-enhanced articles")
         return sve_vijesti
         
     except Exception as e:
@@ -546,21 +596,21 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         if kategorija in kategorija_mapping:
             kategorija = kategorija_mapping[kategorija]
         
-        # Generate news based on category
+        # Generate news based on category - all now with AI enhancements
         if kategorija == "Hrvatska":
-            vijesti = generiraj_hrvatska_vijesti()  # Uses AI-enhanced summaries
+            vijesti = generiraj_hrvatska_vijesti()  # Already AI-enhanced
             filename_prefix = "hrvatska"
         elif kategorija == "Svijet":
-            vijesti = generiraj_svijet_vijesti()
+            vijesti = generiraj_svijet_vijesti()  # Now AI-enhanced
             filename_prefix = "svijet"
         elif kategorija == "Ekonomija":
-            vijesti = generiraj_ekonomija_vijesti()
+            vijesti = generiraj_ekonomija_vijesti()  # Now AI-enhanced
             filename_prefix = "ekonomija"
         elif kategorija == "Sport":
-            vijesti = generiraj_sport_vijesti()
+            vijesti = generiraj_sport_vijesti()  # Now AI-enhanced
             filename_prefix = "sport"
         elif kategorija == "Regija":
-            vijesti = generiraj_regija_vijesti()
+            vijesti = generiraj_regija_vijesti()  # Now AI-enhanced
             filename_prefix = "regija"
         else:
             return f"Nepoznata kategorija: {kategorija}", None
@@ -574,12 +624,13 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             rezultat += f"NASLOV: {vijest['naslov']}\n"
             rezultat += f"{vijest['tekst']}\n"
             
-            # Add AI-enhanced content if available (for Croatian news)
+            # Add AI-enhanced content (now available for all categories)
             if vijest.get('ai_enhanced_content'):
                 rezultat += f"AI_ENHANCED: {vijest['ai_enhanced_content']}\n"
             
-            if vijest.get('link'):  # Only add link if it exists
-                rezultat += f"Izvor: {vijest['izvor']} - {vijest['link']}\n\n"
+            # Add original link for external access
+            if vijest.get('original_link'):
+                rezultat += f"Izvor: {vijest['izvor']} - {vijest['original_link']}\n\n"
             else:
                 rezultat += f"Izvor: {vijest['izvor']}\n\n"
         
@@ -616,7 +667,8 @@ def parse_news_content(content):
                 'tekst': '',
                 'ai_enhanced_content': '',
                 'izvor': '',
-                'link': ''
+                'original_link': '',  # Changed from 'link' to 'original_link'
+                'link': None  # This will be None for all categories now
             }
             i += 1
             
@@ -645,10 +697,10 @@ def parse_news_content(content):
                 if ' - ' in source_line:
                     source_parts = source_line.split(' - ', 1)
                     current_article['izvor'] = source_parts[0].strip()
-                    current_article['link'] = source_parts[1].strip()
+                    current_article['original_link'] = source_parts[1].strip()
                 else:
                     current_article['izvor'] = source_line
-                    current_article['link'] = None  # No link for AI-enhanced articles
+                    current_article['original_link'] = None
             i += 1
         else:
             i += 1

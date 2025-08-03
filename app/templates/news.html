@@ -27,75 +27,6 @@
         line-height: 1.3;
     }
 
-    .status-bar {
-        background: white;
-        padding: 1rem;
-        border-radius: 10px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        margin: 1rem 0;
-        width: 100%;
-    }
-
-    .status-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.8rem;
-        align-items: stretch;
-    }
-
-    .status-badges {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .status-badge {
-        padding: 0.4rem 0.8rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: white;
-        white-space: nowrap;
-    }
-
-    .status-fresh { background: #28a745; }
-    .status-cache { background: #17a2b8; }
-    .status-ai-enhanced { background: #9c27b0; }
-
-    .status-time {
-        color: #6c757d;
-        font-size: 0.85rem;
-        display: flex;
-        align-items: center;
-        gap: 0.3rem;
-    }
-
-    .refresh-button {
-        background: linear-gradient(45deg, #667eea, #764ba2);
-        color: white;
-        border: none;
-        padding: 0.8rem 1.2rem;
-        border-radius: 20px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        width: 100%;
-        -webkit-tap-highlight-color: transparent;
-        font-weight: 600;
-    }
-
-    .refresh-button:hover, .refresh-button:active {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
-    }
-
-    .refresh-button:disabled {
-        opacity: 0.6;
-        transform: none;
-        cursor: not-allowed;
-    }
-
     .articles-count {
         background: linear-gradient(135deg, #74b9ff, #0984e3);
         color: white;
@@ -113,17 +44,10 @@
         margin: 1rem 0;
         border-left: 4px solid #d32f2f;
         box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
-        transition: all 0.3s ease;
+        transition: none !important;
         width: 100%;
         word-wrap: break-word;
         overflow-wrap: break-word;
-    }
-
-    .article-item:hover {
-        /* Remove hover effect - keep same styling as normal state */
-        transform: none;
-        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
-        background: linear-gradient(145deg, #ff6b6b, #ff5252);
     }
 
     .article-header {
@@ -154,7 +78,7 @@
     .article-meta {
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
         flex-wrap: wrap;
         gap: 0.8rem;
     }
@@ -165,20 +89,17 @@
         border-radius: 20px;
         font-size: 0.8rem;
         font-weight: 500;
+        flex-shrink: 0;
     }
 
-    /* Category-specific badge colors */
-    .hrvatska .source-badge { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
-    .svijet .source-badge { background: linear-gradient(45deg, #00695c, #004d40); }
-    .ekonomija .source-badge { background: linear-gradient(45deg, #4c51bf, #553c9a); }
-    .sport .source-badge { background: linear-gradient(45deg, #2f855a, #276749); }
-    .regija .source-badge { background: linear-gradient(45deg, #c05621, #9c4221); }
-
-    .source-badge.ai-enhanced {
-        background: linear-gradient(45deg, #880e4f, #ad1457);
+    .article-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
     }
 
-    .read-link {
+    .action-button {
         color: white;
         padding: 0.6rem 1.2rem;
         border-radius: 25px;
@@ -188,66 +109,42 @@
         transition: all 0.3s ease;
         -webkit-tap-highlight-color: transparent;
         display: inline-block;
+        text-align: center;
+        border: none;
+        cursor: pointer;
+        min-height: 20px;
     }
 
-    /* Category-specific read link colors */
-    .hrvatska .read-link { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
-    .svijet .read-link { background: linear-gradient(45deg, #00695c, #004d40); }
-    .ekonomija .read-link { background: linear-gradient(45deg, #4c51bf, #553c9a); }
-    .sport .read-link { background: linear-gradient(45deg, #2f855a, #276749); }
-    .regija .read-link { background: linear-gradient(45deg, #c05621, #9c4221); }
-
-    .read-link.ai-enhanced {
-        background: linear-gradient(45deg, #880e4f, #ad1457);
+    .ai-expand-btn {
+        background: linear-gradient(45deg, #9c27b0, #673ab7);
     }
 
-    .read-link:hover {
+    .ai-expand-btn:hover, .ai-expand-btn:active {
         transform: scale(1.02);
         color: white;
         text-decoration: none;
+        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
     }
 
-    /* Category-specific hover effects for read links */
-    .hrvatska .read-link:hover { box-shadow: 0 4px 12px rgba(211, 47, 47, 0.4); }
-    .svijet .read-link:hover { box-shadow: 0 4px 12px rgba(0, 105, 92, 0.4); }
-    .ekonomija .read-link:hover { box-shadow: 0 4px 12px rgba(76, 81, 191, 0.4); }
-    .sport .read-link:hover { box-shadow: 0 4px 12px rgba(47, 133, 90, 0.4); }
-    .regija .read-link:hover { box-shadow: 0 4px 12px rgba(192, 86, 33, 0.4); }
-
-    .read-link.ai-enhanced:hover {
-        box-shadow: 0 4px 12px rgba(136, 14, 79, 0.4);
+    .external-link-btn {
+        background: linear-gradient(45deg, #ff9800, #f57c00);
     }
 
-    .full-content-note {
-        background: linear-gradient(45deg, #9c27b0, #673ab7);
+    .external-link-btn:hover, .external-link-btn:active {
+        transform: scale(1.02);
         color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        display: inline-block;
+        text-decoration: none;
+        box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
     }
 
-    .expand-button {
-        background: none;
-        border: 1px solid #667eea;
-        color: #667eea;
-        padding: 0.4rem 1rem;
-        border-radius: 15px;
-        cursor: pointer;
-        font-size: 0.85rem;
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 0.5rem;
-        -webkit-tap-highlight-color: transparent;
-    }
+    /* Category-specific badge colors */
+    .hrvatska .source-badge { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
+    .svijet .source-badge { background: linear-gradient(45deg, #00695c, #004d40); }
+    .ekonomija .source-badge { background: linear-gradient(45deg, #4c51bf, #553c9a); }
+    .sport .source-badge { background: linear-gradient(45deg, #2f855a, #276749); }
+    .regija .source-badge { background: linear-gradient(45deg, #c05621, #9c4221); }
 
-    .expand-button:hover, .expand-button:active {
-        background: #667eea;
-        color: white;
-    }
-
-    .full-text {
+    .ai-enhanced-content {
         margin-top: 1rem;
         padding: 1rem;
         background: rgba(255, 255, 255, 0.15);
@@ -313,29 +210,23 @@
             font-size: 1.6rem;
         }
 
-        .status-info {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .refresh-button {
-            width: auto;
-            min-width: 150px;
-        }
-
         .article-header {
             font-size: 1.2rem;
         }
 
         .article-footer {
             flex-direction: row;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-between;
         }
 
-        .expand-button {
-            width: auto;
+        .article-buttons {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .action-button {
             min-width: 120px;
         }
     }
@@ -348,10 +239,6 @@
 
         .category-header h2 {
             font-size: 1.8rem;
-        }
-
-        .status-bar {
-            padding: 1.5rem;
         }
 
         .article-item {
@@ -368,13 +255,13 @@
     }
 
     /* Category-specific colors */
-    .hrvatska { background: #FF6B6B; border-left-color: #FF6B6B; }
-    .svijet { background: #4ECDC4; border-left-color: #4ECDC4; }
-    .ekonomija { background: #45B7D1; border-left-color: #45B7D1; }
-    .sport { background: #96CEB4; border-left-color: #96CEB4; }
-    .regija { background: #FECA57; border-left-color: #FECA57; }
+    .hrvatska { background: linear-gradient(145deg, #ff6b6b, #ee5a52) !important; border-left-color: #FF6B6B; }
+    .svijet { background: linear-gradient(145deg, #4ecdc4, #26a69a) !important; border-left-color: #4ECDC4; }
+    .ekonomija { background: linear-gradient(145deg, #667eea, #5a67d8) !important; border-left-color: #45B7D1; }
+    .sport { background: linear-gradient(145deg, #48bb78, #38a169) !important; border-left-color: #96CEB4; }
+    .regija { background: linear-gradient(145deg, #ed8936, #dd6b20) !important; border-left-color: #FECA57; }
 
-    /* NUCLEAR OPTION: Force remove all hover effects */
+    /* Force no hover effects */
     .article-item,
     .article-item:hover,
     .article-item:focus,
@@ -382,51 +269,15 @@
         transform: none !important;
         transition: none !important;
     }
-
-    /* Maintain category-specific colors on hover */
-    .hrvatska .article-item,
-    .hrvatska .article-item:hover {
-        background: linear-gradient(145deg, #ff6b6b, #ee5a52) !important;
-        box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2) !important;
-    }
-
-    .svijet .article-item,
-    .svijet .article-item:hover {
-        background: linear-gradient(145deg, #4ecdc4, #26a69a) !important;
-        box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2) !important;
-    }
-
-    .ekonomija .article-item,
-    .ekonomija .article-item:hover {
-        background: linear-gradient(145deg, #667eea, #5a67d8) !important;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
-    }
-
-    .sport .article-item,
-    .sport .article-item:hover {
-        background: linear-gradient(145deg, #48bb78, #38a169) !important;
-        box-shadow: 0 4px 12px rgba(72, 187, 120, 0.2) !important;
-    }
-
-    .regija .article-item,
-    .regija .article-item:hover {
-        background: linear-gradient(145deg, #ed8936, #dd6b20) !important;
-        box-shadow: 0 4px 12px rgba(237, 137, 54, 0.2) !important;
-    }
-
-    /* Ensure no global transitions affect articles */
-    .article-item * {
-        transition: none !important;
-    }
 </style>
 
 <!-- Category Header -->
 {% set category_config = {
     'Hrvatska': {'color': '#FF6B6B', 'icon': '🇭🇷', 'desc': 'Najnovije vijesti iz domaćih medija (AI-poboljšano)'},
-    'Svijet': {'color': '#4ECDC4', 'icon': '🌍', 'desc': 'Međunarodne vijesti prevedene na hrvatski'},
-    'Ekonomija': {'color': '#45B7D1', 'icon': '💼', 'desc': 'Poslovne i ekonomske vijesti'},
-    'Sport': {'color': '#96CEB4', 'icon': '⚽', 'desc': 'Sportske vijesti iz Hrvatske i svijeta'},
-    'Regija': {'color': '#FECA57', 'icon': '🏛️', 'desc': 'Najvažnije vijesti iz susjednih zemalja'}
+    'Svijet': {'color': '#4ECDC4', 'icon': '🌍', 'desc': 'Međunarodne vijesti prevedene na hrvatski (AI-poboljšano)'},
+    'Ekonomija': {'color': '#45B7D1', 'icon': '💼', 'desc': 'Poslovne i ekonomske vijesti (AI-poboljšano)'},
+    'Sport': {'color': '#96CEB4', 'icon': '⚽', 'desc': 'Sportske vijesti iz Hrvatske i svijeta (AI-poboljšano)'},
+    'Regija': {'color': '#FECA57', 'icon': '🏛️', 'desc': 'Najvažnije vijesti iz susjednih zemalja (AI-poboljšano)'}
 } %}
 
 {% set config = category_config.get(category, {'color': '#667eea', 'icon': '📰', 'desc': 'Najnovije vijesti'}) %}
@@ -446,62 +297,48 @@
         
         <!-- Article preview text -->
         <div class="article-preview">
-            {% set article_text = article.tekst|string %}
-            <!-- Always show preview for all categories -->
-            {% if article_text|length > 300 %}
-                {{ article_text[:300] }}...
-            {% else %}
-                {{ article_text }}
-            {% endif %}
+            {{ article.tekst }}
         </div>
         
         <!-- Article footer -->
         <div class="article-footer">
             <div class="article-meta">
-                <div class="source-badge {% if 'AI-poboljšano' in article.izvor %}ai-enhanced{% endif %}">
+                <div class="source-badge">
                     📍 {{ article.izvor }}
                 </div>
+            </div>
+            
+            <!-- Action buttons for all categories -->
+            <div class="article-buttons">
+                {% if article.ai_enhanced_content %}
+                    <!-- AI-enhanced content button -->
+                    <button class="action-button ai-expand-btn" onclick="toggleAIContent(this)">
+                        🤖 Čitaj AI sažetak
+                    </button>
+                {% endif %}
                 
-                {% if category == 'Hrvatska' and article.ai_enhanced_content %}
-                    <!-- Croatian news - show "Čitaj više" for AI-enhanced content -->
-                    <div class="read-link ai-enhanced" onclick="toggleAIContent(this)" style="cursor: pointer;">
-                        🤖 Čitaj više
-                    </div>
-                {% elif article.link and article.link != '#' and article.link != None %}
-                    <!-- Other categories - show external link -->
-                    <a href="{{ article.link }}" target="_blank" class="read-link">📖 Čitaj više</a>
+                {% if article.original_link and article.original_link != '#' and article.original_link != None %}
+                    <!-- External link button -->
+                    <a href="{{ article.original_link }}" target="_blank" class="action-button external-link-btn">
+                        🔗 Izvorni članak
+                    </a>
                 {% endif %}
             </div>
             
-            <!-- AI-enhanced content for Croatian news -->
-            {% if category == 'Hrvatska' and article.ai_enhanced_content %}
-            <div class="full-text ai-enhanced-content" style="border-left-color: {{ config.color }}; display: none;" data-ai-content="{{ article.ai_enhanced_content|e }}">
+            <!-- AI-enhanced content for all categories -->
+            {% if article.ai_enhanced_content %}
+            <div class="ai-enhanced-content" style="border-left-color: {{ config.color }};" data-ai-content="{{ article.ai_enhanced_content|e }}">
                 {{ article.ai_enhanced_content }}
             </div>
-            {% endif %}
-            
-            <!-- Show full text toggle (only for non-Croatian news with long content) -->
-            {% if category != 'Hrvatska' %}
-                {% set article_text = article.tekst|string %}
-                {% if article_text|length > 300 %}
-                <button onclick="toggleFullText(this)" class="expand-button" data-full-text="{{ article_text|e }}">
-                    ▼ Prikaži cijeli tekst
-                </button>
-                <div class="full-text" style="border-left-color: {{ config.color }};">
-                    {{ article_text }}
-                </div>
-                {% endif %}
             {% endif %}
         </div>
     </div>
     {% endfor %}
 
-    <!-- Articles Count - moved here after articles -->
+    <!-- Articles Count -->
     <div class="articles-count">
         📊 Ukupno {{ articles|length }} {{ 'članak' if articles|length == 1 else ('članka' if articles|length < 5 else 'članaka') }}
-        {% if category == 'Hrvatska' %}
         <br><small style="opacity: 0.9;">🤖 Svi članci poboljšani pomoću AI tehnologije</small>
-        {% endif %}
     </div>
 {% else %}
     <!-- No articles message -->
@@ -525,26 +362,13 @@
 <script>
 // Function to refresh news with improved UX
 async function refreshNews() {
-    const button = document.getElementById('refreshBtn');
-    const originalText = button.innerHTML;
-    
-    // Show loading state
-    button.innerHTML = '⏳ Osvježavam...';
-    button.disabled = true;
-    button.style.opacity = '0.7';
-    
-    // Add loading class for animation
-    button.classList.add('loading');
-    
     try {
         const response = await fetch('/api/refresh/{{ category.lower() }}', {
             method: 'POST'
         });
         
         if (response.ok) {
-            button.innerHTML = '✅ Uspješno! Osvježavam stranicu...';
-            
-            // Show success message briefly, then reload
+            // Show success message and reload
             setTimeout(() => {
                 window.location.reload();
             }, 2000);
@@ -553,21 +377,10 @@ async function refreshNews() {
         }
     } catch (error) {
         console.error('Refresh error:', error);
-        button.innerHTML = '❌ Greška! Pokušajte ponovno';
-        button.style.background = 'linear-gradient(45deg, #dc3545, #c82333)';
-        
-        // Reset button after 3 seconds
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.disabled = false;
-            button.style.opacity = '1';
-            button.style.background = 'linear-gradient(45deg, #667eea, #764ba2)';
-            button.classList.remove('loading');
-        }, 3000);
     }
 }
 
-// Function to toggle AI-enhanced content for Croatian news
+// Function to toggle AI-enhanced content for all categories
 function toggleAIContent(button) {
     const article = button.closest('.article-item');
     const aiContentDiv = article.querySelector('.ai-enhanced-content');
@@ -576,8 +389,8 @@ function toggleAIContent(button) {
     if (isHidden) {
         // Show AI-enhanced content
         aiContentDiv.style.display = 'block';
-        button.innerHTML = '🤖 Sakrij';
-        button.style.background = 'linear-gradient(45deg, #673ab7, #9c27b0)';
+        button.innerHTML = '🤖 Sakrij sažetak';
+        button.style.background = 'linear-gradient(45deg, #673ab7, #512da8)';
         
         // Smooth scroll to content
         setTimeout(() => {
@@ -589,38 +402,8 @@ function toggleAIContent(button) {
     } else {
         // Hide AI-enhanced content
         aiContentDiv.style.display = 'none';
-        button.innerHTML = '🤖 Čitaj više';
+        button.innerHTML = '🤖 Čitaj AI sažetak';
         button.style.background = 'linear-gradient(45deg, #9c27b0, #673ab7)';
-    }
-}
-
-// Function to toggle full text display with smooth animation (for non-Croatian news)
-function toggleFullText(button) {
-    const fullTextDiv = button.nextElementSibling;
-    const isHidden = fullTextDiv.style.display === 'none' || fullTextDiv.style.display === '';
-    
-    if (isHidden) {
-        // Show full text
-        fullTextDiv.style.display = 'block';
-        button.innerHTML = '▲ Sakrij tekst';
-        button.style.background = '#667eea';
-        button.style.color = 'white';
-        button.style.borderColor = '#667eea';
-        
-        // Smooth scroll to full text
-        setTimeout(() => {
-            fullTextDiv.scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'nearest' 
-            });
-        }, 100);
-    } else {
-        // Hide full text
-        fullTextDiv.style.display = 'none';
-        button.innerHTML = '▼ Prikaži cijeli tekst';
-        button.style.background = 'none';
-        button.style.color = '#667eea';
-        button.style.borderColor = '#667eea';
     }
 }
 
@@ -672,6 +455,20 @@ document.addEventListener('touchmove', function(e) {
 
 document.addEventListener('touchend', function() {
     isRefreshing = false;
+});
+
+// Handle external links with analytics (optional)
+document.querySelectorAll('.external-link-btn').forEach(link => {
+    link.addEventListener('click', function(e) {
+        // Optional: Add analytics tracking here
+        console.log('External link clicked:', this.href);
+        
+        // Add visual feedback
+        this.style.opacity = '0.7';
+        setTimeout(() => {
+            this.style.opacity = '1';
+        }, 200);
+    });
 });
 </script>
 {% endblock %}
