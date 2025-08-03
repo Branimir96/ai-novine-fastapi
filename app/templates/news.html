@@ -86,9 +86,25 @@
     .article-buttons {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.8rem;
         align-items: stretch;
         width: 100%;
+    }
+
+    .main-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: 100%;
+    }
+
+    .share-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 0.4rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 0.5rem;
     }
 
     .action-button {
@@ -105,6 +121,24 @@
         border: none;
         cursor: pointer;
         min-height: 20px;
+    }
+
+    .share-button {
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        cursor: pointer;
+        min-width: 45px;
+        gap: 0.3rem;
     }
 
     .ai-expand-btn {
@@ -127,6 +161,48 @@
         color: white;
         text-decoration: none;
         box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+    }
+
+    /* Social Media Share Button Colors */
+    .share-whatsapp {
+        background: linear-gradient(45deg, #25D366, #128C7E);
+    }
+
+    .share-whatsapp:hover {
+        box-shadow: 0 3px 8px rgba(37, 211, 102, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .share-twitter {
+        background: linear-gradient(45deg, #000000, #333333);
+    }
+
+    .share-twitter:hover {
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .share-linkedin {
+        background: linear-gradient(45deg, #0077B5, #005885);
+    }
+
+    .share-linkedin:hover {
+        box-shadow: 0 3px 8px rgba(0, 119, 181, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .share-facebook {
+        background: linear-gradient(45deg, #1877F2, #166FE5);
+    }
+
+    .share-facebook:hover {
+        box-shadow: 0 3px 8px rgba(24, 119, 242, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .share-button:hover {
+        color: white;
+        text-decoration: none;
     }
 
     .ai-enhanced-content {
@@ -199,16 +275,21 @@
             font-size: 1.2rem;
         }
 
-        .article-footer {
+        .article-buttons {
             flex-direction: column;
             align-items: stretch;
             justify-content: flex-start;
+            gap: 0.8rem;
         }
 
-        .article-buttons {
+        .main-buttons {
             flex-direction: row;
             align-items: center;
             gap: 0.8rem;
+            justify-content: flex-start;
+        }
+
+        .share-buttons {
             justify-content: flex-start;
         }
 
@@ -290,19 +371,37 @@
         <div class="article-footer">
             <!-- Action buttons for all categories -->
             <div class="article-buttons">
-                {% if article.ai_enhanced_content %}
-                    <!-- AI-enhanced content button -->
-                    <button class="action-button ai-expand-btn" onclick="toggleAIContent(this)">
-                        🤖 Čitaj AI sažetak
-                    </button>
-                {% endif %}
+                <div class="main-buttons">
+                    {% if article.ai_enhanced_content %}
+                        <!-- AI-enhanced content button -->
+                        <button class="action-button ai-expand-btn" onclick="toggleAIContent(this)">
+                            🤖 Čitaj AI sažetak
+                        </button>
+                    {% endif %}
+                    
+                    {% if article.original_link and article.original_link != '#' and article.original_link != None and category != 'Hrvatska' %}
+                        <!-- External link button (hidden for Hrvatska category) -->
+                        <a href="{{ article.original_link }}" target="_blank" class="action-button external-link-btn">
+                            🔗 Izvorni članak
+                        </a>
+                    {% endif %}
+                </div>
                 
-                {% if article.original_link and article.original_link != '#' and article.original_link != None and category != 'Hrvatska' %}
-                    <!-- External link button (hidden for Hrvatska category) -->
-                    <a href="{{ article.original_link }}" target="_blank" class="action-button external-link-btn">
-                        🔗 Izvorni članak
+                <!-- Social Share Buttons -->
+                <div class="share-buttons">
+                    <a href="#" class="share-button share-whatsapp" onclick="shareToWhatsApp(this)" title="Podijeli na WhatsApp">
+                        📱 WhatsApp
                     </a>
-                {% endif %}
+                    <a href="#" class="share-button share-twitter" onclick="shareToTwitter(this)" title="Podijeli na X (Twitter)">
+                        🐦 X
+                    </a>
+                    <a href="#" class="share-button share-linkedin" onclick="shareToLinkedIn(this)" title="Podijeli na LinkedIn">
+                        💼 LinkedIn
+                    </a>
+                    <a href="#" class="share-button share-facebook" onclick="shareToFacebook(this)" title="Podijeli na Facebook">
+                        👥 Facebook
+                    </a>
+                </div>
             </div>
             
             <!-- AI-enhanced content for all categories -->
@@ -340,6 +439,78 @@
 </div>
 
 <script>
+// Function to get article data for sharing
+function getArticleData(shareButton) {
+    const article = shareButton.closest('.article-item');
+    const title = article.querySelector('.article-header').textContent.replace('📰 ', '').trim();
+    const preview = article.querySelector('.article-preview').textContent.trim();
+    const currentUrl = window.location.href;
+    
+    return {
+        title: title,
+        text: preview.length > 100 ? preview.substring(0, 100) + '...' : preview,
+        url: currentUrl
+    };
+}
+
+// WhatsApp sharing
+function shareToWhatsApp(button) {
+    const data = getArticleData(button);
+    const message = `*${data.title}*\n\n${data.text}\n\nPročitaj više: ${data.url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    
+    // Add visual feedback
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        button.style.transform = 'translateY(-1px)';
+    }, 150);
+    
+    window.open(whatsappUrl, '_blank');
+}
+
+// X (Twitter) sharing
+function shareToTwitter(button) {
+    const data = getArticleData(button);
+    const tweet = `${data.title}\n\n${data.text}\n\n${data.url} #AIVijesti #Hrvatska`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+    
+    // Add visual feedback
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        button.style.transform = 'translateY(-1px)';
+    }, 150);
+    
+    window.open(twitterUrl, '_blank', 'width=550,height=420');
+}
+
+// LinkedIn sharing
+function shareToLinkedIn(button) {
+    const data = getArticleData(button);
+    const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(data.url)}`;
+    
+    // Add visual feedback
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        button.style.transform = 'translateY(-1px)';
+    }, 150);
+    
+    window.open(linkedinUrl, '_blank', 'width=550,height=420');
+}
+
+// Facebook sharing
+function shareToFacebook(button) {
+    const data = getArticleData(button);
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(data.url)}`;
+    
+    // Add visual feedback
+    button.style.transform = 'scale(0.95)';
+    setTimeout(() => {
+        button.style.transform = 'translateY(-1px)';
+    }, 150);
+    
+    window.open(facebookUrl, '_blank', 'width=550,height=420');
+}
+
 // Function to refresh news with improved UX
 async function refreshNews() {
     try {
