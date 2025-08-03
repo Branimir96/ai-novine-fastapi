@@ -297,8 +297,8 @@
                     </button>
                 {% endif %}
                 
-                {% if article.original_link and article.original_link != '#' and article.original_link != None %}
-                    <!-- External link button -->
+                {% if article.original_link and article.original_link != '#' and article.original_link != None and category != 'Hrvatska' %}
+                    <!-- External link button (hidden for Hrvatska category) -->
                     <a href="{{ article.original_link }}" target="_blank" class="action-button external-link-btn">
                         🔗 Izvorni članak
                     </a>
