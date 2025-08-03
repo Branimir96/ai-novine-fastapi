@@ -83,20 +83,12 @@
         gap: 0.8rem;
     }
 
-    .source-badge {
-        color: white;
-        padding: 0.3rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        flex-shrink: 0;
-    }
-
     .article-buttons {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
         align-items: stretch;
+        width: 100%;
     }
 
     .action-button {
@@ -136,13 +128,6 @@
         text-decoration: none;
         box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
     }
-
-    /* Category-specific badge colors */
-    .hrvatska .source-badge { background: linear-gradient(45deg, #d32f2f, #b71c1c); }
-    .svijet .source-badge { background: linear-gradient(45deg, #00695c, #004d40); }
-    .ekonomija .source-badge { background: linear-gradient(45deg, #4c51bf, #553c9a); }
-    .sport .source-badge { background: linear-gradient(45deg, #2f855a, #276749); }
-    .regija .source-badge { background: linear-gradient(45deg, #c05621, #9c4221); }
 
     .ai-enhanced-content {
         margin-top: 1rem;
@@ -215,15 +200,16 @@
         }
 
         .article-footer {
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
         }
 
         .article-buttons {
             flex-direction: row;
             align-items: center;
             gap: 0.8rem;
+            justify-content: flex-start;
         }
 
         .action-button {
@@ -302,12 +288,6 @@
         
         <!-- Article footer -->
         <div class="article-footer">
-            <div class="article-meta">
-                <div class="source-badge">
-                    📍 {{ article.izvor }}
-                </div>
-            </div>
-            
             <!-- Action buttons for all categories -->
             <div class="article-buttons">
                 {% if article.ai_enhanced_content %}
