@@ -942,5 +942,8 @@ document.querySelectorAll('.external-link-btn').forEach(link => {
     });
 });
 </script>
-
+<!-- Load financial widget JavaScript only on Ekonomija page -->
+{% if category == 'Ekonomija' %}
+<script src="/static/js/financial-widget.js"></script>
+{% endif %}
 {% endblock %}
