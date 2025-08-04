@@ -152,12 +152,7 @@ async def health_check():
         "stock_api": {
             "configured": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
             "endpoints": ["/api/stock/{symbol}", "/api/crypto/{symbol}", "/api/prices/all"]
-        },
-    return {
-        "cache_stats": stats,
-        "categories": category_status,
-        "stock_api_available": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
-        "timestamp": datetime.datetime.now().isoformat()
+        }
     }
 
 # New endpoints for scheduler management
@@ -235,8 +230,7 @@ async def get_financial_widget(request: Request):
         "request": request,
         "title": "Financial Widget",
         "standalone": True
-    }).now().isoformat()
-    }
+    })
 
 @app.get("/test-news")
 async def test_news():
@@ -331,4 +325,4 @@ async def cache_stats():
         "cache_stats": stats,
         "categories": category_status,
         "stock_api_available": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
-        "timestamp": datetime.datetime
+        "timestamp": datetime.datetime}
