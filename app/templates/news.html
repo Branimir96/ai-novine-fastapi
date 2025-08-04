@@ -336,6 +336,187 @@
         transform: none !important;
         transition: none !important;
     }
+
+    /* Financial Widget Styles - Only for Ekonomija page */
+    .financial-widget {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin: 2rem 0;
+        color: white;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+
+    .widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .widget-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 600;
+    }
+
+    .update-time {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        background: rgba(255,255,255,0.2);
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+    }
+
+    .prices-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-section h4 {
+        margin: 0 0 1rem 0;
+        font-size: 1rem;
+        opacity: 0.9;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+        padding-bottom: 0.5rem;
+    }
+
+    .price-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+
+    .price-item {
+        background: rgba(255,255,255,0.15);
+        border-radius: 10px;
+        padding: 0.8rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .price-item:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-1px);
+    }
+
+    .symbol {
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .price {
+        font-weight: 700;
+        font-size: 1rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .change {
+        font-weight: 600;
+        font-size: 0.9rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .change.positive {
+        background: rgba(46, 204, 113, 0.8);
+        color: white;
+    }
+
+    .change.negative {
+        background: rgba(231, 76, 60, 0.8);
+        color: white;
+    }
+
+    .widget-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .refresh-btn, .details-link {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.2rem;
+        border-radius: 20px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .refresh-btn:hover, .details-link:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .loading .price, .loading .change {
+        opacity: 0.5;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+
+    @keyframes loading {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    @keyframes priceUpdate {
+        0% { background: rgba(255,255,255,0.4); }
+        100% { background: rgba(255,255,255,0.15); }
+    }
+
+    .price-item.updated {
+        animation: priceUpdate 0.8s ease;
+    }
+
+    /* Mobile optimizations for financial widget */
+    @media (max-width: 768px) {
+        .financial-widget {
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .prices-container {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        .widget-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .widget-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .refresh-btn, .details-link {
+            text-align: center;
+            justify-content: center;
+        }
+    }
 </style>
 
 <!-- Category Header -->
@@ -353,6 +534,129 @@
     <h2>{{ config.icon }} {{ category }}</h2>
     <p>{{ config.desc }}</p>
 </div>
+
+<!-- Financial Widget - Only show on Ekonomija page -->
+{% if category == 'Ekonomija' %}
+<!-- Financial Widget Component -->
+<div class="financial-widget">
+    <div class="widget-header">
+        <h3>💼 Financijski Pregled</h3>
+        <span class="update-time">Ažurirano: <span id="lastUpdate">--:--</span></span>
+    </div>
+    
+    <div class="prices-container">
+        <!-- Croatian Markets -->
+        <div class="price-section">
+            <h4>🇭🇷 Hrvatska</h4>
+            <div class="price-grid">
+                <div class="price-item" data-symbol="CROBEX">
+                    <span class="symbol">CROBEX</span>
+                    <span class="price" id="crobex-price">Loading...</span>
+                    <span class="change" id="crobex-change">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Markets -->
+        <div class="price-section">
+            <h4>🌍 Svjetska Tržišta</h4>
+            <div class="price-grid">
+                <div class="price-item" data-symbol="SPX">
+                    <span class="symbol">S&P 500</span>
+                    <span class="price" id="spx-price">Loading...</span>
+                    <span class="change" id="spx-change">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mag7 + ASML Stocks -->
+        <div class="price-section">
+            <h4>📈 Tech Dionice</h4>
+            <div class="price-grid">
+                <div class="price-item" data-symbol="AAPL">
+                    <span class="symbol">Apple</span>
+                    <span class="price" id="aapl-price">Loading...</span>
+                    <span class="change" id="aapl-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="GOOGL">
+                    <span class="symbol">Alphabet</span>
+                    <span class="price" id="googl-price">Loading...</span>
+                    <span class="change" id="googl-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="MSFT">
+                    <span class="symbol">Microsoft</span>
+                    <span class="price" id="msft-price">Loading...</span>
+                    <span class="change" id="msft-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="AMZN">
+                    <span class="symbol">Amazon</span>
+                    <span class="price" id="amzn-price">Loading...</span>
+                    <span class="change" id="amzn-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="NVDA">
+                    <span class="symbol">NVIDIA</span>
+                    <span class="price" id="nvda-price">Loading...</span>
+                    <span class="change" id="nvda-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="TSLA">
+                    <span class="symbol">Tesla</span>
+                    <span class="price" id="tsla-price">Loading...</span>
+                    <span class="change" id="tsla-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="META">
+                    <span class="symbol">Meta</span>
+                    <span class="price" id="meta-price">Loading...</span>
+                    <span class="change" id="meta-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="ASML">
+                    <span class="symbol">ASML</span>
+                    <span class="price" id="asml-price">Loading...</span>
+                    <span class="change" id="asml-change">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cryptocurrencies -->
+        <div class="price-section">
+            <h4>₿ Kriptovalute</h4>
+            <div class="price-grid">
+                <div class="price-item" data-symbol="BTC">
+                    <span class="symbol">Bitcoin</span>
+                    <span class="price" id="btc-price">Loading...</span>
+                    <span class="change" id="btc-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="ETH">
+                    <span class="symbol">Ethereum</span>
+                    <span class="price" id="eth-price">Loading...</span>
+                    <span class="change" id="eth-change">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Commodities -->
+        <div class="price-section">
+            <h4>🏆 Sirovine</h4>
+            <div class="price-grid">
+                <div class="price-item" data-symbol="GOLD">
+                    <span class="symbol">Zlato</span>
+                    <span class="price" id="gold-price">Loading...</span>
+                    <span class="change" id="gold-change">-</span>
+                </div>
+                <div class="price-item" data-symbol="OIL">
+                    <span class="symbol">Nafta (WTI)</span>
+                    <span class="price" id="oil-price">Loading...</span>
+                    <span class="change" id="oil-change">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="widget-footer">
+        <button class="refresh-btn" onclick="refreshFinancialPrices()">🔄 Osvježi cijene</button>
+        <a href="/widget/financial" target="_blank" class="details-link">📊 Detaljnije</a>
+    </div>
+</div>
+{% endif %}
 
 <!-- News Articles -->
 {% if articles %}
@@ -606,6 +910,22 @@ document.addEventListener('touchmove', function(e) {
 
 document.addEventListener('touchend', function() {
     isRefreshing = false;
+});
+
+// Handle social share buttons with analytics (optional and visual feedback)
+document.querySelectorAll('.share-button').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.preventDefault(); // Prevent default link behavior since we're using onclick
+        
+        // Optional: Add analytics tracking here
+        const platform = this.classList.contains('share-whatsapp') ? 'WhatsApp' :
+                        this.classList.contains('share-twitter') ? 'Twitter' :
+                        this.classList.contains('share-linkedin') ? 'LinkedIn' : 'Facebook';
+        
+        console.log(`Article shared to ${platform}`);
+        
+        // The actual sharing is handled by the onclick functions
+    });
 });
 
 // Handle external links with analytics (optional)
