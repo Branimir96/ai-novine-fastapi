@@ -11,7 +11,6 @@ from dotenv import load_dotenv
 
 # Import your existing routers
 from app.routers import news, admin
-from app.routers import stock_api  # Add this new import
 from app.services.simple_redis_manager import simple_cache
 from app.services.smart_scheduler import smart_scheduler
 
