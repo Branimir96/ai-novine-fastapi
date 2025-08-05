@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app with enhanced functionality
 app = FastAPI(
     title="AI Novine",
-    description="Croatian News Portal with Smart Scheduling, Redis Caching & Real-time Stock Prices",
+    description="Croatian News Portal with Smart Scheduling & Redis Caching",
     version="2.3.0",  # Updated version
     lifespan=lifespan
 )
@@ -86,7 +86,7 @@ templates = Jinja2Templates(directory="app/templates")
 # Include routers
 app.include_router(news.router)
 app.include_router(admin.router)
-app.include_router(stock_api.router)  # Add the new stock API router
+# Removed: app.include_router(stock_api.router)  # Stock API router removed
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -117,8 +117,8 @@ async def home(request: Request):
     # Get scheduler status
     scheduler_status = smart_scheduler.get_schedule_status()
     
-    # Check if stock API is configured
-    stock_api_configured = bool(os.getenv("ALPHA_VANTAGE_API_KEY"))
+    # Stock API is disabled
+    stock_api_configured = False
     
     return templates.TemplateResponse("index.html", {
         "request": request,
@@ -130,28 +130,25 @@ async def home(request: Request):
         "redis_connected": cache_stats["connected"],
         "cache_hit_rate": cache_stats["hit_rate"],
         "scheduler_stats": smart_scheduler.refresh_stats,
-        "stock_api_configured": stock_api_configured  # Add stock API status
+        "stock_api_configured": stock_api_configured  # Stock API disabled
     })
 
 @app.get("/health")
 async def health_check():
-    """Health check with cache, scheduler, and stock API status"""
+    """Health check with cache and scheduler status"""
     cache_stats = simple_cache.get_stats()
     scheduler_status = smart_scheduler.get_schedule_status()
     
     return {
         "status": "healthy", 
-        "message": "AI Novine FastAPI with smart scheduling and stock prices is running!",
+        "message": "AI Novine FastAPI with smart scheduling is running!",
         "cache": cache_stats,
         "scheduler": {
             "running": scheduler_status["is_running"],
             "jobs": scheduler_status.get("total_jobs", 0),
             "stats": smart_scheduler.refresh_stats
-        },
-        "stock_api": {
-            "configured": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
-            "endpoints": ["/api/stock/{symbol}", "/api/crypto/{symbol}", "/api/prices/all"]
         }
+        # Removed stock_api section
     }
 
 # New endpoints for scheduler management
@@ -221,16 +218,6 @@ async def get_scheduler_statistics():
         }
     }
 
-# Financial widget endpoint for easy integration
-@app.get("/widget/financial")
-async def get_financial_widget(request: Request):
-    """Get the financial widget HTML for embedding"""
-    return templates.TemplateResponse("financial_widget.html", {
-        "request": request,
-        "title": "Financial Widget",
-        "standalone": True
-    })
-
 @app.get("/test-news")
 async def test_news():
     """Test news service with cache info"""
@@ -252,58 +239,9 @@ async def test_news():
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
-@app.get("/test-stocks")
-async def test_stocks():
-    """Test stock API functionality"""
-    try:
-        alpha_vantage_key = os.getenv("ALPHA_VANTAGE_API_KEY")
-        
-        if not alpha_vantage_key:
-            return {
-                "status": "error",
-                "message": "Alpha Vantage API key not configured",
-                "setup_url": "https://www.alphavantage.co/support/#api-key"
-            }
-        
-        # Test a simple stock request
-        import aiohttp
-        test_url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=AAPL&apikey={alpha_vantage_key}"
-        
-        async with aiohttp.ClientSession() as session:
-            async with session.get(test_url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    if "Global Quote" in data:
-                        return {
-                            "status": "success",
-                            "message": "Stock API working!",
-                            "test_symbol": "AAPL",
-                            "api_response": "Valid"
-                        }
-                    elif "Note" in data:
-                        return {
-                            "status": "warning",
-                            "message": "API rate limit reached - this is normal",
-                            "note": data["Note"]
-                        }
-                    else:
-                        return {
-                            "status": "error",
-                            "message": "Invalid API response",
-                            "response": data
-                        }
-                else:
-                    return {
-                        "status": "error",
-                        "message": f"API returned status {response.status}"
-                    }
-                    
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
-
 @app.get("/cache-stats")
 async def cache_stats():
-    """Get detailed cache statistics including stock prices"""
+    """Get detailed cache statistics"""
     stats = simple_cache.get_stats()
     
     # Get cache status for all categories
@@ -323,5 +261,5 @@ async def cache_stats():
     return {
         "cache_stats": stats,
         "categories": category_status,
-        "stock_api_available": bool(os.getenv("ALPHA_VANTAGE_API_KEY")),
-        "timestamp": datetime.datetime}
+        "timestamp": datetime.datetime.now().isoformat()
+    }
