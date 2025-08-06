@@ -3,86 +3,532 @@
 {% block title %}AI Novine - Početna stranica{% endblock %}
 
 {% block content %}
+<style>
+    /* Serene Home Page Styling */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: var(--space-lg);
+        margin: var(--space-xl) 0;
+    }
 
-<!-- Category Descriptions - Updated with Technology -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #FF6B6B; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #FF6B6B; margin-bottom: 1rem;">🇭🇷 Hrvatska</h3>
-        <p style="color: #555; margin: 0;">Najnovije vijesti iz domaćih medija - HRT, Index, tportal, 24sata, Večernji list</p>
-        <a href="/news/hrvatska" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #FF6B6B; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    .category-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        padding: var(--space-xl);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        transition: var(--transition-gentle);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        transition: var(--transition-gentle);
+    }
+
+    .category-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+        border-color: var(--primary-blue-light);
+    }
+
+    .category-card:hover::before {
+        width: 6px;
+    }
+
+    .category-card h3 {
+        font-family: var(--font-secondary);
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+        letter-spacing: -0.01em;
+    }
+
+    .category-card p {
+        color: var(--text-secondary);
+        margin: 0 0 var(--space-lg) 0;
+        line-height: 1.6;
+        font-size: 1.05rem;
+    }
+
+    .category-link {
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--text-primary);
+        border: 2px solid var(--border-color);
+        padding: var(--space-sm) var(--space-md);
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        font-family: var(--font-system);
+        display: inline-block;
+        transition: var(--transition-gentle);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-link::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(107, 133, 163, 0.1), transparent);
+        transition: var(--transition-smooth);
+    }
+
+    .category-link:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-blue-light);
+        color: var(--primary-blue-dark);
+        text-decoration: none;
+    }
+
+    .category-link:hover::before {
+        left: 100%;
+    }
+
+    /* Category-specific gentle colors */
+    .hrvatska-card::before { background: linear-gradient(135deg, #E57373, #EF5350); }
+    .hrvatska-card h3 { color: #C62828; }
+    .hrvatska-card .category-link { border-color: #E57373; }
+    .hrvatska-card .category-link:hover { border-color: #C62828; color: #C62828; }
+
+    .svijet-card::before { background: linear-gradient(135deg, #4FC3F7, #29B6F6); }
+    .svijet-card h3 { color: #0277BD; }
+    .svijet-card .category-link { border-color: #4FC3F7; }
+    .svijet-card .category-link:hover { border-color: #0277BD; color: #0277BD; }
+
+    .ekonomija-card::before { background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue)); }
+    .ekonomija-card h3 { color: var(--primary-blue-dark); }
+    .ekonomija-card .category-link { border-color: var(--primary-blue-light); }
+    .ekonomija-card .category-link:hover { border-color: var(--primary-blue-dark); color: var(--primary-blue-dark); }
+
+    .tehnologija-card::before { background: linear-gradient(135deg, #BA68C8, #AB47BC); }
+    .tehnologija-card h3 { color: #7B1FA2; }
+    .tehnologija-card .category-link { border-color: #BA68C8; }
+    .tehnologija-card .category-link:hover { border-color: #7B1FA2; color: #7B1FA2; }
+
+    .sport-card::before { background: linear-gradient(135deg, var(--success-soft), #66BB6A); }
+    .sport-card h3 { color: #2E7D32; }
+    .sport-card .category-link { border-color: var(--success-soft); }
+    .sport-card .category-link:hover { border-color: #2E7D32; color: #2E7D32; }
+
+    .regija-card::before { background: linear-gradient(135deg, var(--warning-soft), #FFA726); }
+    .regija-card h3 { color: #EF6C00; }
+    .regija-card .category-link { border-color: var(--warning-soft); }
+    .regija-card .category-link:hover { border-color: #EF6C00; color: #EF6C00; }
+
+    /* Statistics Section */
+    .stats-section {
+        background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
+        color: white;
+        padding: var(--space-xl);
+        border-radius: 20px;
+        text-align: center;
+        margin: var(--space-xl) 0;
+        box-shadow: 0 12px 40px rgba(107, 133, 163, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stats-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        pointer-events: none;
+    }
+
+    .stats-section h3 {
+        font-family: var(--font-secondary);
+        margin-bottom: var(--space-lg);
+        font-size: 1.8rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stats-grid {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: var(--space-lg);
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-item {
+        text-align: center;
+        opacity: 0.95;
+    }
+
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 600;
+        font-family: var(--font-secondary);
+        margin-bottom: var(--space-xs);
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .stat-label {
+        font-size: 0.95rem;
+        opacity: 0.9;
+        font-family: var(--font-system);
+        font-weight: 500;
+    }
+
+    /* API Section */
+    .api-section {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px);
+        padding: var(--space-xl);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+        margin: var(--space-xl) 0;
+    }
+
+    .api-section h3 {
+        font-family: var(--font-secondary);
+        color: var(--text-primary);
+        margin-bottom: var(--space-md);
+        font-size: 1.6rem;
+        font-weight: 600;
+    }
+
+    .api-section p {
+        color: var(--text-secondary);
+        margin-bottom: var(--space-md);
+        line-height: 1.6;
+        font-size: 1.05rem;
+    }
+
+    .api-code {
+        background: var(--hover-bg);
+        padding: var(--space-md);
+        border-radius: 12px;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+        line-height: 1.4;
+    }
+
+    .api-code div {
+        margin: var(--space-xs) 0;
+    }
+
+    .api-code strong {
+        color: var(--primary-blue-dark);
+        font-weight: 600;
+    }
+
+    .api-code a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        transition: var(--transition-gentle);
+    }
+
+    .api-code a:hover {
+        color: var(--primary-blue-dark);
+        text-decoration: underline;
+    }
+
+    /* Technology Highlight */
+    .tech-highlight {
+        background: linear-gradient(135deg, #BA68C8, #AB47BC);
+        color: white;
+        padding: var(--space-xl);
+        border-radius: 20px;
+        text-align: center;
+        margin: var(--space-xl) 0;
+        box-shadow: 0 12px 40px rgba(186, 104, 200, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tech-highlight::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+        pointer-events: none;
+    }
+
+    .tech-highlight h3 {
+        font-family: var(--font-secondary);
+        margin-bottom: var(--space-md);
+        font-size: 1.6rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .tech-highlight p {
+        margin: 0 0 var(--space-lg) 0;
+        opacity: 0.95;
+        line-height: 1.6;
+        font-size: 1.05rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .tech-highlight-link {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: var(--space-sm) var(--space-lg);
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-family: var(--font-system);
+        display: inline-block;
+        transition: var(--transition-gentle);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+    }
+
+    .tech-highlight-link:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .category-grid {
+            grid-template-columns: 1fr;
+            gap: var(--space-md);
+        }
+
+        .stats-grid {
+            flex-direction: column;
+            gap: var(--space-md);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<!-- Category Descriptions - Updated with Serene Design -->
+<div class="category-grid">
+    <div class="category-card hrvatska-card">
+        <h3>🇭🇷 Hrvatska</h3>
+        <p>Najnovije vijesti iz domaćih medija - HRT, Index, tportal, 24sata, Večernji list</p>
+        <a href="/news/hrvatska" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #4ECDC4; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #4ECDC4; margin-bottom: 1rem;">🌍 Svijet</h3>
-        <p style="color: #555; margin: 0;">Međunarodne vijesti prevedene na hrvatski - NYT, BBC, Guardian, Al Jazeera</p>
-        <a href="/news/svijet" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #4ECDC4; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    <div class="category-card svijet-card">
+        <h3>🌍 Svijet</h3>
+        <p>Međunarodne vijesti prevedene na hrvatski - NYT, BBC, Guardian, Al Jazeera</p>
+        <a href="/news/svijet" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #45B7D1; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #45B7D1; margin-bottom: 1rem;">💼 Ekonomija</h3>
-        <p style="color: #555; margin: 0;">Poslovne i ekonomske vijesti - NYT Business, BBC Business, CNBC, Financial Times</p>
-        <a href="/news/ekonomija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #45B7D1; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    <div class="category-card ekonomija-card">
+        <h3>💼 Ekonomija</h3>
+        <p>Poslovne i ekonomske vijesti - NYT Business, BBC Business, CNBC, Financial Times</p>
+        <a href="/news/ekonomija" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <!-- New Technology Category -->
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #9B59B6; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #9B59B6; margin-bottom: 1rem;">💻 Tehnologija</h3>
-        <p style="color: #555; margin: 0;">Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
-        <a href="/news/tehnologija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #9B59B6; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    <!-- Technology Category -->
+    <div class="category-card tehnologija-card">
+        <h3>💻 Tehnologija</h3>
+        <p>Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
+        <a href="/news/tehnologija" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #96CEB4; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #96CEB4; margin-bottom: 1rem;">⚽ Sport</h3>
-        <p style="color: #555; margin: 0;">Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
-        <a href="/news/sport" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #96CEB4; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    <div class="category-card sport-card">
+        <h3>⚽ Sport</h3>
+        <p>Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
+        <a href="/news/sport" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #FECA57; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-        <h3 style="color: #FECA57; margin-bottom: 1rem;">🏛️ Regija</h3>
-        <p style="color: #555; margin: 0;">Najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije</p>
-        <a href="/news/regija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #FECA57; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    <div class="category-card regija-card">
+        <h3>🏛️ Regija</h3>
+        <p>Najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije</p>
+        <a href="/news/regija" class="category-link">📖 Čitaj vijesti</a>
     </div>
 </div>
 
-<!-- Quick Access Stats - Updated -->
-<div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 2rem; border-radius: 15px; text-align: center; margin: 2rem 0;">
-    <h3 style="margin-bottom: 1rem;">📊 Portal Statistike</h3>
-    <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <div style="font-size: 2rem; font-weight: bold;">6</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Kategorija vijesti</div>
+<!-- Portal Statistics -->
+<div class="stats-section">
+    <h3>📊 Portal Statistike</h3>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-number">6</div>
+            <div class="stat-label">Kategorija vijesti</div>
         </div>
-        <div>
-            <div style="font-size: 2rem; font-weight: bold;">25+</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Međunarodnih izvora</div>
+        <div class="stat-item">
+            <div class="stat-number">25+</div>
+            <div class="stat-label">Međunarodnih izvora</div>
         </div>
-        <div>
-            <div style="font-size: 2rem; font-weight: bold;">2x</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">Dnevno osvježavanje</div>
+        <div class="stat-item">
+            <div class="stat-number">25</div>
+            <div class="stat-label">Dnevnih osvježavanja</div>
         </div>
-        <div>
-            <div style="font-size: 2rem; font-weight: bold;">🤖</div>
-            <div style="font-size: 0.9rem; opacity: 0.9;">AI prijevod</div>
+        <div class="stat-item">
+            <div class="stat-number">🤖</div>
+            <div class="stat-label">AI prijevod i poboljšanje</div>
         </div>
     </div>
 </div>
 
 <!-- API Access Information -->
-<div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); margin: 2rem 0;">
-    <h3 style="color: #2c3e50; margin-bottom: 1rem;">🔗 API pristup</h3>
-    <p style="color: #555; margin-bottom: 1rem;">Vaše vijesti su dostupne i preko API-ja za programatski pristup:</p>
-    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.9rem; color: #495057;">
-        <div><strong>Dokumentacija:</strong> <a href="/docs" style="color: #667eea;">/docs</a></div>
+<div class="api-section">
+    <h3>🔗 API pristup</h3>
+    <p>Vaše vijesti su dostupne i preko API-ja za programatski pristup:</p>
+    <div class="api-code">
+        <div><strong>Dokumentacija:</strong> <a href="/docs">/docs</a></div>
         <div><strong>API vijesti:</strong> /api/news/{kategorija}</div>
-        <div><strong>Status cache:</strong> <a href="/api/cache-status" style="color: #667eea;">/api/cache-status</a></div>
+        <div><strong>Status cache:</strong> <a href="/api/cache-status">/api/cache-status</a></div>
+        <div><strong>Tehnologija izvori:</strong> <a href="/api/technology-sources">/api/technology-sources</a></div>
     </div>
 </div>
 
-    /* Category-specific colors - Updated with Technology */
-    .hrvatska { background: linear-gradient(145deg, #ff6b6b, #ee5a52) !important; border-left-color: #FF6B6B; }
-    .svijet { background: linear-gradient(145deg, #4ecdc4, #26a69a) !important; border-left-color: #4ECDC4; }
-    .ekonomija { background: linear-gradient(145deg, #667eea, #5a67d8) !important; border-left-color: #45B7D1; }
-    .tehnologija { background: linear-gradient(145deg, #9b59b6, #8e44ad) !important; border-left-color: #9B59B6; }
-    .sport { background: linear-gradient(145deg, #48bb78, #38a169) !important; border-left-color: #96CEB4; }
-    .regija { background: linear-gradient(145deg, #ed8936, #dd6b20) !important; border-left-color: #FECA57; }
+<!-- Technology Features Highlight -->
+<div class="tech-highlight">
+    <h3>💻 Nova kategorija: Tehnologija</h3>
+    <p>
+        Pratite najnovije tehnološke trendove, inovacije u AI, blockchain tehnologiji, 
+        cybersecurity vijesti i tech industriju - sve prevedeno na hrvatski jezik 
+        i poboljšano pomoću AI tehnologije za lakše razumijevanje.
+    </p>
+    <a href="/news/tehnologija" class="tech-highlight-link">
+        🚀 Istražite tehnološke vijesti
+    </a>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gentle animations for category cards
+    const cards = document.querySelectorAll('.category-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+            card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+
+    // Gentle animations for stats
+    const statNumbers = document.querySelectorAll('.stat-number');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const number = entry.target;
+                const finalValue = number.textContent;
+                
+                if (!isNaN(finalValue)) {
+                    let currentValue = 0;
+                    const increment = finalValue / 30;
+                    const timer = setInterval(() => {
+                        currentValue += increment;
+                        if (currentValue >= finalValue) {
+                            number.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            number.textContent = Math.floor(currentValue);
+                        }
+                    }, 50);
+                }
+            }
+        });
+    }, { threshold: 0.5 });
+
+    statNumbers.forEach(number => {
+        if (!isNaN(number.textContent)) {
+            number.textContent = '0';
+            observer.observe(number);
+        }
+    });
+
+    // Gentle hover effects for all interactive elements
+    const interactiveElements = document.querySelectorAll('.category-link, .tech-highlight-link, .api-code a');
+    interactiveElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-1px)';
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Smooth scrolling for internal links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Gentle loading states for category links
+    document.querySelectorAll('.category-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            this.style.opacity = '0.8';
+            this.innerHTML = '⏳ Učitavam...';
+            
+            // Restore if navigation fails
+            setTimeout(() => {
+                if (this.innerHTML === '⏳ Učitavam...') {
+                    this.innerHTML = '📖 Čitaj vijesti';
+                    this.style.opacity = '1';
+                }
+            }, 3000);
+        });
+    });
+
+    // Respect reduced motion preferences
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('*').forEach(element => {
+            element.style.animationDuration = '0.01ms';
+            element.style.transitionDuration = '0.01ms';
+        });
+    }
+});
+
+// Gentle parallax effect for background elements (subtle)
+window.addEventListener('scroll', function() {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.1;
+        
+        document.querySelectorAll('.stats-section, .tech-highlight').forEach(element => {
+            element.style.transform = `translateY(${rate}px)`;
+        });
+    }
+});
+</script>
 {% endblock %}
