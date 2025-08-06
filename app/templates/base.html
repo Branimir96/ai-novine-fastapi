@@ -408,19 +408,20 @@
             <p>🤖 Vaš pametni portal za najnovije vijesti iz Hrvatske i svijeta</p>
         </div>
 
-        <!-- News Ticker -->
+        <!-- News Ticker - Updated with Technology -->
         <div class="news-ticker">
             <div class="news-ticker-content">
-                🔴 UŽIVO: Najnovije vijesti stižu svakih 2 sata • 🤖 AI tehnologija prevodi vijesti na hrvatski jezik • 🌍 Pokrivamo vijesti iz preko 20 međunarodnih izvora • 📱 Optimizirano za sve uređaje i ekrane • ⚡ Automatsko osvježavanje u 8:00 i 18:00 • 🎯 Pametno rangiranje vijesti po važnosti
+                🔴 UŽIVO: Najnovije vijesti stižu svakih 2 sata • 🤖 AI tehnologija prevodi vijesti na hrvatski jezik • 🌍 Pokrivamo vijesti iz preko 20 međunarodnih izvora • 📱 Optimizirano za sve uređaje i ekrane • ⚡ Automatsko osvježavanje u 8:00 i 18:00 • 🎯 Pametno rangiranje vijesti po važnosti • 💻 Nova kategorija: Tehnologija - najnoviji tech trendovi
             </div>
         </div>
 
-        <!-- Navigation -->
+        <!-- Navigation - Updated with Technology -->
         <div class="nav-bar">
             <div class="nav-buttons">
                 <a href="/news/hrvatska" class="nav-button {% if category == 'Hrvatska' %}active{% endif %}">🇭🇷 Hrvatska</a>
                 <a href="/news/svijet" class="nav-button {% if category == 'Svijet' %}active{% endif %}">🌍 Svijet</a>
                 <a href="/news/ekonomija" class="nav-button {% if category == 'Ekonomija' %}active{% endif %}">💼 Ekonomija</a>
+                <a href="/news/tehnologija" class="nav-button {% if category == 'Tehnologija' %}active{% endif %}">💻 Tehnologija</a>
                 <a href="/news/sport" class="nav-button {% if category == 'Sport' %}active{% endif %}">⚽ Sport</a>
                 <a href="/news/regija" class="nav-button {% if category == 'Regija' %}active{% endif %}">🏛️ Regija</a>
             </div>
@@ -459,13 +460,13 @@
             });
         });
 
-        // Add loading states to navigation buttons
+        // Add loading states to navigation buttons - updated for Technology
         document.querySelectorAll('.nav-button').forEach(button => {
             button.addEventListener('click', function() {
                 // Don't show loading for active page
                 if (!this.classList.contains('active')) {
                     this.style.opacity = '0.7';
-                    this.innerHTML = this.innerHTML.replace(/^[🇭🌍💼⚽🏛]/, '⏳');
+                    this.innerHTML = this.innerHTML.replace(/^[🇭🌍💼💻⚽🏛]/, '⏳');
                 }
             });
         });

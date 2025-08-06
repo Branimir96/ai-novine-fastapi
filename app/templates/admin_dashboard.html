@@ -95,7 +95,7 @@
 <!-- Admin Header -->
 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin: 1rem 0;">
     <h2 style="margin: 0;">⚙️ Admin Dashboard</h2>
-    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">News Scheduler Management & Monitoring</p>
+    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">News Scheduler Management & Monitoring (with Technology News)</p>
     <p style="margin: 0; font-size: 0.9rem; opacity: 0.8;">{{ current_time.strftime('%A, %d.%m.%Y %H:%M:%S') }}</p>
 </div>
 
@@ -113,7 +113,8 @@
             </div>
             
             {% if scheduler_status.is_running %}
-            <p style="color: #28a745; margin: 0.5rem 0;">✅ Automatic news updates are active</p>
+            <p style="color: #28a745; margin: 0.5rem 0;">✅ Automatic news updates are active (6 categories)</p>
+            <p style="color: #6c757d; font-size: 0.9rem;">Including new Technology category</p>
             {% else %}
             <p style="color: #dc3545; margin: 0.5rem 0;">⚠️ Automatic news updates are disabled</p>
             {% endif %}
@@ -140,7 +141,6 @@
     
     <!-- Scheduled Jobs -->
     {% if scheduler_status.jobs %}
-    <div style="margin-top: 2rem;">
         <h4>Scheduled Jobs</h4>
         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px;">
             {% for job in scheduler_status.jobs %}
@@ -157,7 +157,7 @@
     {% endif %}
 </div>
 
-<!-- Manual Fetch Controls -->
+<!-- Manual Fetch Controls - Updated with Technology -->
 <div class="admin-card">
     <h3 style="margin-bottom: 1rem; color: #2c3e50;">🔄 Manual News Fetch</h3>
     
@@ -172,19 +172,24 @@
         <button class="admin-button" onclick="manualFetch('hrvatska')">🇭🇷 Hrvatska</button>
         <button class="admin-button" onclick="manualFetch('svijet')">🌍 Svijet</button>
         <button class="admin-button" onclick="manualFetch('ekonomija')">💼 Ekonomija</button>
+        <button class="admin-button" onclick="manualFetch('tehnologija')" style="background: linear-gradient(45deg, #9B59B6, #8E44AD);">💻 Tehnologija</button>
         <button class="admin-button" onclick="manualFetch('sport')">⚽ Sport</button>
         <button class="admin-button" onclick="manualFetch('regija')">🏛️ Regija</button>
     </div>
 </div>
 
-<!-- Cache Status -->
+<!-- Cache Status - Updated with Technology -->
 <div class="admin-card">
     <h3 style="margin-bottom: 1rem; color: #2c3e50;">💾 Cache Status</h3>
     
     <div class="grid-3">
         {% for category, status in scheduler_status.cache_status.items() %}
         <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid {% if status.cached %}#28a745{% else %}#dc3545{% endif %};">
-            <h5 style="margin: 0 0 0.5rem 0;">{{ category }}</h5>
+            <h5 style="margin: 0 0 0.5rem 0;">
+                {% if category == 'Hrvatska' %}🇭🇷{% elif category == 'Svijet' %}🌍{% elif category == 'Ekonomija' %}💼{% elif category == 'Tehnologija' %}💻{% elif category == 'Sport' %}⚽{% else %}🏛️{% endif %}
+                {{ category }}
+                {% if category == 'Tehnologija' %}<span style="background: #9B59B6; color: white; padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; margin-left: 0.5rem;">NEW</span>{% endif %}
+            </h5>
             <div style="font-size: 0.9rem; color: #6c757d;">
                 <div>Status: 
                     <span class="status-badge {% if status.cached %}status-completed{% else %}status-failed{% endif %}">
@@ -231,7 +236,10 @@
                 {% for task in recent_tasks %}
                 <tr>
                     <td>{{ task.start_time }}</td>
-                    <td>{{ task.category }}</td>
+                    <td>
+                        {% if task.category == 'Hrvatska' %}🇭🇷{% elif task.category == 'Svijet' %}🌍{% elif task.category == 'Ekonomija' %}💼{% elif task.category == 'Tehnologija' %}💻{% elif task.category == 'Sport' %}⚽{% else %}🏛️{% endif %}
+                        {{ task.category }}
+                    </td>
                     <td>
                         <span class="status-badge status-{{ task.status }}">
                             {% if task.status == 'completed' %}✅{% elif task.status == 'failed' %}❌{% else %}⏳{% endif %}
@@ -255,14 +263,15 @@
     {% endif %}
 </div>
 
-<!-- Statistics Overview -->
+<!-- Statistics Overview - Updated -->
 <div class="admin-card">
     <h3 style="margin-bottom: 1rem; color: #2c3e50;">📊 System Statistics</h3>
     
     <div class="grid-3">
         <div style="text-align: center; padding: 1rem; background: #e3f2fd; border-radius: 8px;">
-            <div style="font-size: 2rem; color: #1976d2; margin-bottom: 0.5rem;">{{ recent_tasks|length }}</div>
-            <div style="color: #1976d2; font-weight: bold;">Total Tasks Executed</div>
+            <div style="font-size: 2rem; color: #1976d2; margin-bottom: 0.5rem;">6</div>
+            <div style="color: #1976d2; font-weight: bold;">News Categories</div>
+            <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">Including Technology</div>
         </div>
         
         <div style="text-align: center; padding: 1rem; background: #e8f5e8; border-radius: 8px;">
@@ -281,6 +290,14 @@
             <div style="color: #d32f2f; font-weight: bold;">Failed Tasks</div>
         </div>
     </div>
+    
+    <!-- Technology Category Highlight -->
+    <div style="background: linear-gradient(135deg, #9B59B6, #8E44AD); color: white; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+        <h4 style="margin: 0; margin-bottom: 0.5rem;">💻 New Technology Category</h4>
+        <p style="margin: 0; font-size: 0.9rem; opacity: 0.9;">
+            Now tracking latest tech trends from TechCrunch, Wired, Ars Technica, and more - all translated to Croatian with AI enhancement.
+        </p>
+    </div>
 </div>
 
 <!-- Quick Links -->
@@ -291,7 +308,8 @@
         <a href="/" class="admin-button" style="text-decoration: none;">🏠 Home Page</a>
         <a href="/docs" class="admin-button" style="text-decoration: none;">📖 API Docs</a>
         <a href="/api/cache-status" target="_blank" class="admin-button" style="text-decoration: none;">📊 Cache API</a>
-        <a href="/admin/logs" target="_blank" class="admin-button" style="text-decoration: none;">📋 Full Logs</a>
+        <a href="/news/tehnologija" class="admin-button" style="text-decoration: none; background: linear-gradient(45deg, #9B59B6, #8E44AD);">💻 Tech News</a>
+        <a href="/api/technology-sources" target="_blank" class="admin-button" style="text-decoration: none;">🔧 Tech Sources</a>
     </div>
 </div>
 
@@ -372,7 +390,7 @@ async function manualFetch(category) {
     button.disabled = true;
     
     try {
-        const endpoint = category === 'all' ? '/admin/fetch/all' : `/admin/fetch/${category}`;
+        const endpoint = category === 'all' ? '/admin/fetch/all' : `/admin/refresh/category/${category}`;
         const response = await fetch(endpoint, {
             method: 'POST'
         });

@@ -11,7 +11,7 @@ load_dotenv()
 # Get API key from environment
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-# RSS Feeds configuration (keep your existing RSS_FEEDS dictionary)
+# RSS Feeds configuration with new Technology category
 RSS_FEEDS = {
     "Hrvatska": [
         "https://vijesti.hrt.hr/rss",
@@ -35,6 +35,15 @@ RSS_FEEDS = {
         "https://www.economist.com/finance-and-economics/rss.xml",
         "https://www.theguardian.com/business/economics/rss",
         "https://www.forbes.com/business/feed/",
+    ],
+    "Tehnologija": [
+        "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+        "https://feeds.bbci.co.uk/news/technology/rss.xml",
+        "https://www.theguardian.com/technology/rss",
+        "https://techcrunch.com/feed/",
+        "https://feeds.feedburner.com/oreilly/radar",
+        "https://www.wired.com/feed/rss",
+        "https://arstechnica.com/feed/",
     ],
     "Sport_HR": [
         "https://www.index.hr/rss/sport",
@@ -84,6 +93,7 @@ IZVORNI_JEZIK = {
     "Hrvatska": "hr",
     "Svijet": "en",
     "Ekonomija": "en",
+    "Tehnologija": "en",  # New technology category
     "Sport_HR": "hr",
     "Sport_World": "en",
     "Sport": "mixed",
@@ -209,6 +219,8 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
             context_prompt = "svjetskih vijesti prevedenih na hrvatski, objasni važnost za hrvatsku publiku"
         elif kategorija == "Ekonomija":
             context_prompt = "ekonomskih/poslovnih vijesti, objasni ekonomske implikacije"
+        elif kategorija == "Tehnologija":
+            context_prompt = "tehnoloških vijesti, objasni tehnološke napretke i implikacije za budućnost"
         elif kategorija == "Sport":
             context_prompt = "sportskih vijesti, dodaj kontekst o sportskim postignućima i značaju"
         elif kategorija == "Regija":
@@ -468,6 +480,34 @@ def generiraj_ekonomija_vijesti():
         print(f"❌ Error generating economy news: {str(e)}")
         raise Exception(f"Greška pri generiranju ekonomskih vijesti: {str(e)}")
 
+def generiraj_tehnologija_vijesti():
+    """Dohvaća, prevodi i AI-poboljšava najnovije tehnološke vijesti iz RSS feedova"""
+    try:
+        print("💻 Fetching technology news...")
+        vijesti = dohvati_vijesti_iz_rss("Tehnologija", broj_vijesti=5)
+        
+        if not vijesti:
+            print("❌ No technology news fetched")
+            return None
+            
+        print(f"📰 Fetched {len(vijesti)} technology news articles")
+        print("🔄 Starting translation to Croatian...")
+        
+        # First translate
+        translated_news = prevedi_vijesti(vijesti, "en", "hr")
+        
+        if not translated_news:
+            print("❌ Technology news translation failed")
+            return None
+        
+        # Then create AI-enhanced summaries
+        print("🤖 Creating AI-enhanced summaries for technology news...")
+        return stvori_ai_poboljsane_vijesti(translated_news, "Tehnologija", "en")
+        
+    except Exception as e:
+        print(f"❌ Error generating technology news: {str(e)}")
+        raise Exception(f"Greška pri generiranju tehnoloških vijesti: {str(e)}")
+
 def generiraj_sport_vijesti():
     """
     Dohvaća kombinaciju hrvatskih i svjetskih sportskih vijesti s AI poboljšanjima
@@ -585,6 +625,7 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             "Hrvatske vijesti": "Hrvatska",
             "Svjetske vijesti": "Svijet",
             "Ekonomske vijesti": "Ekonomija",
+            "Tehnološke vijesti": "Tehnologija",  # New mapping
             "Hrvatske sportske vijesti": "Sport",
             "Svjetske sportske vijesti": "Sport",
             "Slovenske vijesti": "Regija",
@@ -606,6 +647,9 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         elif kategorija == "Ekonomija":
             vijesti = generiraj_ekonomija_vijesti()  # Now AI-enhanced
             filename_prefix = "ekonomija"
+        elif kategorija == "Tehnologija":
+            vijesti = generiraj_tehnologija_vijesti()  # New AI-enhanced
+            filename_prefix = "tehnologija"
         elif kategorija == "Sport":
             vijesti = generiraj_sport_vijesti()  # Now AI-enhanced
             filename_prefix = "sport"

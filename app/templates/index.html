@@ -4,10 +4,7 @@
 
 {% block content %}
 
-
-
-
-<!-- Category Descriptions -->
+<!-- Category Descriptions - Updated with Technology -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 3rem 0;">
     <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #FF6B6B; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         <h3 style="color: #FF6B6B; margin-bottom: 1rem;">🇭🇷 Hrvatska</h3>
@@ -27,6 +24,13 @@
         <a href="/news/ekonomija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #45B7D1; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
     </div>
     
+    <!-- New Technology Category -->
+    <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #9B59B6; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+        <h3 style="color: #9B59B6; margin-bottom: 1rem;">💻 Tehnologija</h3>
+        <p style="color: #555; margin: 0;">Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
+        <a href="/news/tehnologija" style="display: inline-block; margin-top: 1rem; padding: 0.5rem 1rem; background: #9B59B6; color: white; text-decoration: none; border-radius: 20px; font-size: 0.9rem;">📖 Čitaj vijesti</a>
+    </div>
+    
     <div style="background: white; padding: 1.5rem; border-radius: 15px; border-left: 4px solid #96CEB4; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
         <h3 style="color: #96CEB4; margin-bottom: 1rem;">⚽ Sport</h3>
         <p style="color: #555; margin: 0;">Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
@@ -40,16 +44,16 @@
     </div>
 </div>
 
-<!-- Quick Access Stats -->
+<!-- Quick Access Stats - Updated -->
 <div style="background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 2rem; border-radius: 15px; text-align: center; margin: 2rem 0;">
     <h3 style="margin-bottom: 1rem;">📊 Portal Statistike</h3>
     <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <div style="font-size: 2rem; font-weight: bold;">5</div>
+            <div style="font-size: 2rem; font-weight: bold;">6</div>
             <div style="font-size: 0.9rem; opacity: 0.9;">Kategorija vijesti</div>
         </div>
         <div>
-            <div style="font-size: 2rem; font-weight: bold;">20+</div>
+            <div style="font-size: 2rem; font-weight: bold;">25+</div>
             <div style="font-size: 0.9rem; opacity: 0.9;">Međunarodnih izvora</div>
         </div>
         <div>
@@ -73,4 +77,12 @@
         <div><strong>Status cache:</strong> <a href="/api/cache-status" style="color: #667eea;">/api/cache-status</a></div>
     </div>
 </div>
+
+    /* Category-specific colors - Updated with Technology */
+    .hrvatska { background: linear-gradient(145deg, #ff6b6b, #ee5a52) !important; border-left-color: #FF6B6B; }
+    .svijet { background: linear-gradient(145deg, #4ecdc4, #26a69a) !important; border-left-color: #4ECDC4; }
+    .ekonomija { background: linear-gradient(145deg, #667eea, #5a67d8) !important; border-left-color: #45B7D1; }
+    .tehnologija { background: linear-gradient(145deg, #9b59b6, #8e44ad) !important; border-left-color: #9B59B6; }
+    .sport { background: linear-gradient(145deg, #48bb78, #38a169) !important; border-left-color: #96CEB4; }
+    .regija { background: linear-gradient(145deg, #ed8936, #dd6b20) !important; border-left-color: #FECA57; }
 {% endblock %}

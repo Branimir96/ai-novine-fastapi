@@ -12,13 +12,13 @@ from app.services.news_service import generiraj_vijesti, parse_news_content
 logger = logging.getLogger(__name__)
 
 class SmartNewsScheduler:
-    """Priority-based staggered news scheduler"""
+    """Priority-based staggered news scheduler with Technology category"""
     
     def __init__(self):
         self.scheduler = AsyncIOScheduler(timezone='Europe/Zagreb')
         self.is_running = False
         
-        # Category priorities and frequencies
+        # Category priorities and frequencies - added Tehnologija
         self.category_priorities = {
             # High priority - 6 times/day
             "Hrvatska": {
@@ -37,6 +37,11 @@ class SmartNewsScheduler:
                 "frequency": 4,
                 "times": ["09:00", "15:00", "12:00", "18:30"]
             },
+            "Tehnologija": {  # New technology category
+                "priority": "medium",
+                "frequency": 4,
+                "times": ["08:00", "14:00", "20:00", "16:30"]
+            },
             "Sport": {
                 "priority": "medium",
                 "frequency": 4, 
@@ -50,7 +55,7 @@ class SmartNewsScheduler:
             }
         }
         
-        # Statistics tracking
+        # Statistics tracking - updated to include Tehnologija
         self.refresh_stats = {
             "total_refreshes": 0,
             "successful_refreshes": 0,
@@ -153,8 +158,12 @@ class SmartNewsScheduler:
             
             # Log schedule summary
             total_jobs = sum(len(config["times"]) for config in self.category_priorities.values())
+            high_refreshes = sum(config["frequency"] for config in self.category_priorities.values() if config["priority"] == "high")
+            medium_refreshes = sum(config["frequency"] for config in self.category_priorities.values() if config["priority"] == "medium")
+            low_refreshes = sum(config["frequency"] for config in self.category_priorities.values() if config["priority"] == "low")
+            
             logger.info(f"✅ Smart scheduler started with {total_jobs} scheduled jobs")
-            logger.info(f"📊 Daily schedule: High=12, Medium=8, Low=1 total refreshes")
+            logger.info(f"📊 Daily schedule: High={high_refreshes}, Medium={medium_refreshes}, Low={low_refreshes} total refreshes")
             
         except Exception as e:
             logger.error(f"❌ Failed to start smart scheduler: {e}")
