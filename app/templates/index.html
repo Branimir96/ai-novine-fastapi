@@ -136,7 +136,7 @@
     .regija-card .category-link { border-color: var(--warning-soft); }
     .regija-card .category-link:hover { border-color: #EF6C00; color: #EF6C00; }
 
-    /* Statistics Section with Dynamic Data */
+    /* Statistics Section with Hardcoded Data */
     .stats-section {
         background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
         color: white;
@@ -331,64 +331,31 @@
     </div>
 </div>
 
-<!-- Dynamic Portal Statistics -->
+<!-- Hardcoded Portal Statistics -->
 <div class="stats-section">
     <h3>📊 Portal Statistike</h3>
     <div class="stats-grid">
         <div class="stat-item">
-            <div class="stat-number">{{ categories_count | default(6) }}</div>
+            <div class="stat-number">6</div>
             <div class="stat-label">Kategorija vijesti</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ total_sources | default(54) }}+</div>
+            <div class="stat-number">54+</div>
             <div class="stat-label">Međunarodnih izvora</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">{{ daily_refreshes | default(25) }}</div>
+            <div class="stat-number">25</div>
             <div class="stat-label">Dnevnih osvježavanja</div>
             <div class="stat-sublabel">
                 Scheduler: 
-                {% if scheduler_running %}
                 <span class="status-indicator status-online"></span>Aktivan
-                {% else %}
-                <span class="status-indicator status-offline"></span>Neaktivan
-                {% endif %}
             </div>
         </div>
         <div class="stat-item">
             <div class="stat-number">🤖</div>
             <div class="stat-label">AI prijevod i poboljšanje</div>
             <div class="stat-sublabel">
-                {% if ai_enabled %}
                 <span class="status-indicator status-online"></span>Omogućen
-                {% else %}
-                <span class="status-indicator status-warning"></span>Ograničen
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    
-    <!-- Additional Live Statistics -->
-    <div style="margin-top: var(--space-lg); padding-top: var(--space-lg); border-top: 1px solid rgba(255,255,255,0.2); position: relative; z-index: 1;">
-        <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: var(--space-md); font-size: 0.9rem; opacity: 0.9;">
-            <div>
-                <strong>{{ total_cached_articles | default(0) }}</strong> članaka u cache
-            </div>
-            <div>
-                Cache hit rate: <strong>{{ cache_hit_rate | default(0) }}%</strong>
-            </div>
-            {% if scheduler_stats and scheduler_stats.total_refreshes > 0 %}
-            <div>
-                Uspješnost: <strong>{{ success_rate | default(0) }}%</strong>
-            </div>
-            {% endif %}
-            <div>
-                Redis: 
-                {% if redis_connected %}
-                <span style="color: #4CAF50;">●</span> Povezan
-                {% else %}
-                <span style="color: #F44336;">●</span> Nepovezan
-                {% endif %}
             </div>
         </div>
     </div>
@@ -409,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 100);
     });
 
-    // Gentle animations for dynamic stats
+    // Gentle animations for stats
     const statNumbers = document.querySelectorAll('.stat-number');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
