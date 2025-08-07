@@ -1,4 +1,4 @@
-# Update your app/main.py to include the Technology category
+# Update your app/main.py to include dynamic statistics data
 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
@@ -67,7 +67,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="AI Novine",
     description="Croatian News Portal with Smart Scheduling, Redis Caching & Technology News",
-    version="2.4.0",  # Updated version for Technology category
+    version="2.5.0",
     lifespan=lifespan
 )
 
@@ -80,6 +80,32 @@ templates = Jinja2Templates(directory="app/templates")
 # Include routers
 app.include_router(news.router)
 app.include_router(admin.router)
+
+def calculate_portal_statistics():
+    """Calculate dynamic portal statistics"""
+    
+    # 1. Count categories
+    categories_count = len(smart_scheduler.category_priorities)
+    
+    # 2. Count total RSS sources
+    from app.services.news_service import RSS_FEEDS
+    total_sources = sum(len(feeds) for feeds in RSS_FEEDS.values())
+    
+    # 3. Count daily refreshes
+    daily_refreshes = sum(
+        config["frequency"] for config in smart_scheduler.category_priorities.values()
+    )
+    
+    # 4. Get scheduler status
+    scheduler_status = smart_scheduler.get_schedule_status()
+    
+    return {
+        "categories_count": categories_count,
+        "total_sources": total_sources,
+        "daily_refreshes": daily_refreshes,
+        "scheduler_running": scheduler_status["is_running"],
+        "total_jobs": scheduler_status.get("total_jobs", 0)
+    }
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -96,32 +122,62 @@ async def home(request: Request):
     day_name = day_names.get(now.strftime("%A"), now.strftime("%A"))
     current_date = f"{day_name}, {now.strftime('%d.%m.%Y')}"
     
-    # Get cache statistics - updated with Technology
+    # Get cache statistics
     cache_stats = simple_cache.get_stats()
     
-    # Count cached articles - updated with Technology
+    # Count cached articles
     total_cached = 0
     categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"]
+    category_cache_status = {}
+    
     for category in categories:
         cached_news = await simple_cache.get_news(category)
-        if cached_news:
-            total_cached += len(cached_news)
+        count = len(cached_news) if cached_news else 0
+        total_cached += count
+        category_cache_status[category] = {
+            "has_cache": cached_news is not None,
+            "count": count
+        }
     
     # Get scheduler status
     scheduler_status = smart_scheduler.get_schedule_status()
+    
+    # Calculate dynamic portal statistics
+    portal_stats = calculate_portal_statistics()
+    
+    # Get performance statistics
+    refresh_stats = smart_scheduler.refresh_stats
+    success_rate = 0
+    if refresh_stats["total_refreshes"] > 0:
+        success_rate = (refresh_stats["successful_refreshes"] / refresh_stats["total_refreshes"]) * 100
     
     return templates.TemplateResponse("index.html", {
         "request": request,
         "title": "AI Novine - Početna stranica",
         "current_date": current_date,
         "current_time": current_time,
-        "scheduler_running": scheduler_status["is_running"],
+        
+        # Dynamic Portal Statistics
+        "categories_count": portal_stats["categories_count"],
+        "total_sources": portal_stats["total_sources"], 
+        "daily_refreshes": portal_stats["daily_refreshes"],
+        "scheduler_running": portal_stats["scheduler_running"],
+        
+        # Cache and Performance Data
         "total_cached_articles": total_cached,
+        "category_cache_status": category_cache_status,
         "redis_connected": cache_stats["connected"],
         "cache_hit_rate": cache_stats["hit_rate"],
-        "scheduler_stats": smart_scheduler.refresh_stats,
-        "categories_count": 6,  # Updated to 6 categories
-        "new_category": "Tehnologija"  # Highlight new category
+        
+        # Scheduler Performance
+        "scheduler_stats": refresh_stats,
+        "success_rate": round(success_rate, 1),
+        "total_jobs": portal_stats["total_jobs"],
+        
+        # Additional useful data
+        "categories_list": categories,
+        "ai_enabled": bool(os.getenv("ANTHROPIC_API_KEY")),
+        "last_updated": now.isoformat()
     })
 
 @app.get("/health")
@@ -129,10 +185,12 @@ async def health_check():
     """Health check with cache and scheduler status - updated for Technology"""
     cache_stats = simple_cache.get_stats()
     scheduler_status = smart_scheduler.get_schedule_status()
+    portal_stats = calculate_portal_statistics()
     
     return {
         "status": "healthy", 
         "message": "AI Novine FastAPI with smart scheduling and Technology news is running!",
+        "portal_statistics": portal_stats,
         "categories": ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"],
         "cache": cache_stats,
         "scheduler": {
@@ -142,7 +200,45 @@ async def health_check():
         }
     }
 
-# New endpoints for scheduler management - updated for Technology
+# API endpoint to get live statistics
+@app.get("/api/portal-statistics")
+async def get_portal_statistics():
+    """Get real-time portal statistics"""
+    portal_stats = calculate_portal_statistics()
+    
+    # Get cache data
+    cache_stats = simple_cache.get_stats()
+    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"]
+    
+    total_cached_articles = 0
+    cached_categories = 0
+    
+    for category in categories:
+        cached_news = await simple_cache.get_news(category)
+        if cached_news:
+            total_cached_articles += len(cached_news)
+            cached_categories += 1
+    
+    return {
+        "portal_statistics": portal_stats,
+        "cache_statistics": {
+            "total_cached_articles": total_cached_articles,
+            "cached_categories": cached_categories,
+            "cache_hit_rate": cache_stats["hit_rate"],
+            "redis_connected": cache_stats["connected"]
+        },
+        "performance": {
+            "total_refreshes": smart_scheduler.refresh_stats["total_refreshes"],
+            "successful_refreshes": smart_scheduler.refresh_stats["successful_refreshes"],
+            "success_rate": (
+                smart_scheduler.refresh_stats["successful_refreshes"] / 
+                max(smart_scheduler.refresh_stats["total_refreshes"], 1) * 100
+            )
+        },
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+
+# Existing endpoints continue as before...
 @app.get("/scheduler/status")
 async def get_detailed_scheduler_status():
     """Get detailed scheduler status and statistics - includes Technology"""
@@ -189,8 +285,10 @@ async def get_scheduler_statistics():
     """Get detailed scheduler statistics and performance metrics - includes Technology"""
     stats = smart_scheduler.refresh_stats
     status = smart_scheduler.get_schedule_status()
+    portal_stats = calculate_portal_statistics()
     
     return {
+        "portal_statistics": portal_stats,
         "refresh_statistics": stats,
         "scheduler_status": status["is_running"],
         "total_jobs": status.get("total_jobs", 0),
@@ -231,13 +329,15 @@ async def test_news():
             except Exception as e:
                 test_results[category] = {"status": "error", "error": str(e)}
         
-        # Get cache stats
+        # Get cache stats and portal statistics
         cache_stats = simple_cache.get_stats()
+        portal_stats = calculate_portal_statistics()
         
         return {
             "status": "success", 
             "message": "News service test completed!", 
             "category_results": test_results,
+            "portal_statistics": portal_stats,
             "cache_stats": cache_stats
         }
     except Exception as e:
@@ -262,9 +362,12 @@ async def cache_stats():
             "last_cached": cache_timestamp.isoformat() if cache_timestamp else None
         }
     
+    portal_stats = calculate_portal_statistics()
+    
     return {
         "cache_stats": stats,
         "categories": category_status,
+        "portal_statistics": portal_stats,
         "total_categories": len(categories),
         "timestamp": datetime.datetime.now().isoformat()
     }

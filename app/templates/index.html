@@ -59,6 +59,13 @@
         font-size: 1.05rem;
     }
 
+    .category-status {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin: var(--space-sm) 0;
+        font-family: var(--font-system);
+    }
+
     .category-link {
         background: rgba(255, 255, 255, 0.9);
         color: var(--text-primary);
@@ -129,7 +136,7 @@
     .regija-card .category-link { border-color: var(--warning-soft); }
     .regija-card .category-link:hover { border-color: #EF6C00; color: #EF6C00; }
 
-    /* Statistics Section */
+    /* Statistics Section with Dynamic Data */
     .stats-section {
         background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
         color: white;
@@ -174,6 +181,7 @@
     .stat-item {
         text-align: center;
         opacity: 0.95;
+        min-width: 120px;
     }
 
     .stat-number {
@@ -189,7 +197,27 @@
         opacity: 0.9;
         font-family: var(--font-system);
         font-weight: 500;
+        line-height: 1.3;
     }
+
+    .stat-sublabel {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 0.2rem;
+    }
+
+    /* Status indicators */
+    .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-left: 0.3rem;
+    }
+
+    .status-online { background: #4CAF50; }
+    .status-offline { background: #F44336; }
+    .status-warning { background: #FF9800; }
 
     /* API Section */
     .api-section {
@@ -325,210 +353,3 @@
         .stats-grid {
             flex-direction: column;
             gap: var(--space-md);
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-        }
-    }
-</style>
-
-<!-- Category Descriptions - Updated with Serene Design -->
-<div class="category-grid">
-    <div class="category-card hrvatska-card">
-        <h3>🇭🇷 Hrvatska</h3>
-        <p>Najnovije vijesti iz domaćih medija - HRT, Index, tportal, 24sata, Večernji list</p>
-        <a href="/news/hrvatska" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-    
-    <div class="category-card svijet-card">
-        <h3>🌍 Svijet</h3>
-        <p>Međunarodne vijesti prevedene na hrvatski - NYT, BBC, Guardian, Al Jazeera</p>
-        <a href="/news/svijet" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-    
-    <div class="category-card ekonomija-card">
-        <h3>💼 Ekonomija</h3>
-        <p>Poslovne i ekonomske vijesti - NYT Business, BBC Business, CNBC, Financial Times</p>
-        <a href="/news/ekonomija" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-    
-    <!-- Technology Category -->
-    <div class="category-card tehnologija-card">
-        <h3>💻 Tehnologija</h3>
-        <p>Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
-        <a href="/news/tehnologija" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-    
-    <div class="category-card sport-card">
-        <h3>⚽ Sport</h3>
-        <p>Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
-        <a href="/news/sport" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-    
-    <div class="category-card regija-card">
-        <h3>🏛️ Regija</h3>
-        <p>Najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije</p>
-        <a href="/news/regija" class="category-link">📖 Čitaj vijesti</a>
-    </div>
-</div>
-
-<!-- Portal Statistics -->
-<div class="stats-section">
-    <h3>📊 Portal Statistike</h3>
-    <div class="stats-grid">
-        <div class="stat-item">
-            <div class="stat-number">6</div>
-            <div class="stat-label">Kategorija vijesti</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">25+</div>
-            <div class="stat-label">Međunarodnih izvora</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">25</div>
-            <div class="stat-label">Dnevnih osvježavanja</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">🤖</div>
-            <div class="stat-label">AI prijevod i poboljšanje</div>
-        </div>
-    </div>
-</div>
-
-<!-- API Access Information -->
-<div class="api-section">
-    <h3>🔗 API pristup</h3>
-    <p>Vaše vijesti su dostupne i preko API-ja za programatski pristup:</p>
-    <div class="api-code">
-        <div><strong>Dokumentacija:</strong> <a href="/docs">/docs</a></div>
-        <div><strong>API vijesti:</strong> /api/news/{kategorija}</div>
-        <div><strong>Status cache:</strong> <a href="/api/cache-status">/api/cache-status</a></div>
-        <div><strong>Tehnologija izvori:</strong> <a href="/api/technology-sources">/api/technology-sources</a></div>
-    </div>
-</div>
-
-<!-- Technology Features Highlight -->
-<div class="tech-highlight">
-    <h3>💻 Nova kategorija: Tehnologija</h3>
-    <p>
-        Pratite najnovije tehnološke trendove, inovacije u AI, blockchain tehnologiji, 
-        cybersecurity vijesti i tech industriju - sve prevedeno na hrvatski jezik 
-        i poboljšano pomoću AI tehnologije za lakše razumijevanje.
-    </p>
-    <a href="/news/tehnologija" class="tech-highlight-link">
-        🚀 Istražite tehnološke vijesti
-    </a>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Gentle animations for category cards
-    const cards = document.querySelectorAll('.category-card');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(30px)';
-        
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-
-    // Gentle animations for stats
-    const statNumbers = document.querySelectorAll('.stat-number');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const number = entry.target;
-                const finalValue = number.textContent;
-                
-                if (!isNaN(finalValue)) {
-                    let currentValue = 0;
-                    const increment = finalValue / 30;
-                    const timer = setInterval(() => {
-                        currentValue += increment;
-                        if (currentValue >= finalValue) {
-                            number.textContent = finalValue;
-                            clearInterval(timer);
-                        } else {
-                            number.textContent = Math.floor(currentValue);
-                        }
-                    }, 50);
-                }
-            }
-        });
-    }, { threshold: 0.5 });
-
-    statNumbers.forEach(number => {
-        if (!isNaN(number.textContent)) {
-            number.textContent = '0';
-            observer.observe(number);
-        }
-    });
-
-    // Gentle hover effects for all interactive elements
-    const interactiveElements = document.querySelectorAll('.category-link, .tech-highlight-link, .api-code a');
-    interactiveElements.forEach(element => {
-        element.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-1px)';
-        });
-        
-        element.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-        });
-    });
-
-    // Smooth scrolling for internal links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-
-    // Gentle loading states for category links
-    document.querySelectorAll('.category-link').forEach(link => {
-        link.addEventListener('click', function(e) {
-            this.style.opacity = '0.8';
-            this.innerHTML = '⏳ Učitavam...';
-            
-            // Restore if navigation fails
-            setTimeout(() => {
-                if (this.innerHTML === '⏳ Učitavam...') {
-                    this.innerHTML = '📖 Čitaj vijesti';
-                    this.style.opacity = '1';
-                }
-            }, 3000);
-        });
-    });
-
-    // Respect reduced motion preferences
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        document.querySelectorAll('*').forEach(element => {
-            element.style.animationDuration = '0.01ms';
-            element.style.transitionDuration = '0.01ms';
-        });
-    }
-});
-
-// Gentle parallax effect for background elements (subtle)
-window.addEventListener('scroll', function() {
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.1;
-        
-        document.querySelectorAll('.stats-section, .tech-highlight').forEach(element => {
-            element.style.transform = `translateY(${rate}px)`;
-        });
-    }
-});
-</script>
-{% endblock %}
