@@ -136,7 +136,7 @@
     .regija-card .category-link { border-color: var(--warning-soft); }
     .regija-card .category-link:hover { border-color: #EF6C00; color: #EF6C00; }
 
-    /* Statistics Section with Hardcoded Data */
+    /* Statistics Section - Completely Hardcoded */
     .stats-section {
         background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
         color: white;
@@ -216,8 +216,6 @@
     }
 
     .status-online { background: #4CAF50; }
-    .status-offline { background: #F44336; }
-    .status-warning { background: #FF9800; }
 
     /* Responsive Design */
     @media (max-width: 768px) {
@@ -284,7 +282,6 @@
         <a href="/news/ekonomija" class="category-link">📖 Čitaj vijesti</a>
     </div>
     
-    <!-- Technology Category with Dynamic Status -->
     <div class="category-card tehnologija-card">
         <h3>💻 Tehnologija</h3>
         <p>Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
@@ -331,20 +328,20 @@
     </div>
 </div>
 
-<!-- Hardcoded Portal Statistics -->
+<!-- HARDCODED Portal Statistics - NO TEMPLATE VARIABLES -->
 <div class="stats-section">
     <h3>📊 Portal Statistike</h3>
     <div class="stats-grid">
         <div class="stat-item">
-            <div class="stat-number">6</div>
+            <div class="stat-number" data-target="6">6</div>
             <div class="stat-label">Kategorija vijesti</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">54+</div>
+            <div class="stat-number" data-target="54">54+</div>
             <div class="stat-label">Međunarodnih izvora</div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">25</div>
+            <div class="stat-number" data-target="25">25</div>
             <div class="stat-label">Dnevnih osvježavanja</div>
             <div class="stat-sublabel">
                 Scheduler: 
@@ -376,24 +373,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 100);
     });
 
-    // Gentle animations for stats
+    // Hardcoded number animations - will always show correct values
     const statNumbers = document.querySelectorAll('.stat-number');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const number = entry.target;
-                const finalValue = number.textContent.replace('+', '').replace('🤖', '');
+                const target = number.getAttribute('data-target');
                 
-                if (!isNaN(finalValue) && finalValue !== '') {
+                if (target && !isNaN(target)) {
                     let currentValue = 0;
-                    const increment = parseInt(finalValue) / 30;
+                    const finalValue = parseInt(target);
+                    const increment = finalValue / 30;
+                    
+                    // Set to 0 first for animation
+                    number.textContent = '0';
+                    
                     const timer = setInterval(() => {
                         currentValue += increment;
-                        if (currentValue >= parseInt(finalValue)) {
-                            number.textContent = number.textContent.includes('+') ? finalValue + '+' : finalValue;
+                        if (currentValue >= finalValue) {
+                            // Ensure we show the final correct value
+                            if (finalValue === 54) {
+                                number.textContent = '54+';
+                            } else {
+                                number.textContent = finalValue.toString();
+                            }
                             clearInterval(timer);
                         } else {
-                            number.textContent = Math.floor(currentValue);
+                            number.textContent = Math.floor(currentValue).toString();
                         }
                     }, 50);
                 }
@@ -401,10 +408,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, { threshold: 0.5 });
 
+    // Only animate numbers with data-target attribute
     statNumbers.forEach(number => {
-        const value = number.textContent.replace('+', '').replace('🤖', '');
-        if (!isNaN(value) && value !== '') {
-            number.textContent = '0';
+        if (number.getAttribute('data-target')) {
             observer.observe(number);
         }
     });
