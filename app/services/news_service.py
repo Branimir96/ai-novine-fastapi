@@ -91,6 +91,11 @@ RSS_FEEDS = {
         "https://feeds.feedburner.com/euronews/en/home/",
         "https://eureporter.co/feed/",
         "https://voxeurop.eu/en/feed",
+         "https://www.euronews.com/business.rss",  # EU business news
+    "https://www.euronews.com/news.rss",     # General EU news
+    "https://brusselsmorning.com/feed/",      # Brussels Morning
+    "https://www.europeanfiles.eu/feed",     # European Files
+    "https://www.euractiv.com/sections/politics/feed/"
     ],
 }
 
