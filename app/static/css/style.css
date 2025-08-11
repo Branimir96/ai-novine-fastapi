@@ -45,3 +45,25 @@
 ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(135deg, #764ba2, #667eea);
 }
+
+/* EU Category Simple Styling */
+.eu-card::before { 
+    background: linear-gradient(135deg, #003d82, #004494); 
+}
+
+.eu-card h3 { 
+    color: #003d82; 
+}
+
+.eu-card .category-link { 
+    border-color: #0066cc; 
+}
+
+.eu-card .category-link:hover { 
+    border-color: #003d82; 
+    color: #003d82; 
+}
+
+.europska_unija::before, .europska-unija::before { 
+    background: linear-gradient(135deg, #003d82, #004494); 
+}
