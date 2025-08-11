@@ -87,11 +87,11 @@ RSS_FEEDS = {
     ],
     # NEW EU CATEGORY
     "Europska_unija": [
-        "https://ec.europa.eu/commission/presscorner/rss/en",
-        "https://www.europarl.europa.eu/rss/en/top-stories.xml",
-        "https://www.euractiv.com/feed/",
-        "https://eur-lex.europa.eu/rss/legal-content.xml",
-        "https://www.politico.eu/rss/politics/",
+        "https://www.euractiv.com/?feed=mcfeed",
+        "https://www.euronews.com/rss?level=program&name=europe-news",
+        "https://www.politico.eu/feed",
+        "https://euobserver.com",
+        "https://voxeurop.eu/en/feed",
     ],
 }
 
