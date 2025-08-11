@@ -87,15 +87,14 @@ RSS_FEEDS = {
     ],
     # NEW EU CATEGORY
     "Europska_unija": [
-        "https://www.euractiv.com/feed",
-        "https://feeds.feedburner.com/euronews/en/home/",
-        "https://eureporter.co/feed/",
-        "https://voxeurop.eu/en/feed",
-         "https://www.euronews.com/business.rss",  # EU business news
-    "https://www.euronews.com/news.rss",     # General EU news
-    "https://brusselsmorning.com/feed/",      # Brussels Morning
-    "https://www.europeanfiles.eu/feed",     # European Files
-    "https://www.euractiv.com/sections/politics/feed/"
+     "https://feeds.feedburner.com/euronews/en/home/",
+    "https://voxeurop.eu/en/feed",
+    "https://brusselsmorning.com/feed/",
+    "https://www.europeanfiles.eu/feed",
+    # Add some additional reliable feeds to get more articles
+    "https://www.france24.com/en/europe/rss",
+    "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
+    "https://rss.cnn.com/rss/edition_europe.rss",
     ],
 }
 
