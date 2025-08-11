@@ -15,7 +15,7 @@ async def show_news(request: Request, category: str):
     try:
         # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
-            category = "Europska_unija"
+            category = "Europska unija"
         else:
             category = category.capitalize()
         
@@ -46,7 +46,7 @@ async def show_news(request: Request, category: str):
                 last_updated = datetime.datetime.now()
                 
                 # Cache with appropriate TTL based on category
-                if category == "Europska_unija":
+                if category == "Europska unija":
                     ttl_seconds = 21600  # 6 hours for EU news
                 else:
                     ttl_seconds = 7200   # 2 hours for other categories
