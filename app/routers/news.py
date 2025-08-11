@@ -13,7 +13,11 @@ templates = Jinja2Templates(directory="app/templates")
 async def show_news(request: Request, category: str):
     """Display news for a specific category with caching"""
     try:
-        category = category.capitalize()
+        # Handle URL-friendly EU category name
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
+        else:
+            category = category.capitalize()
         
         print(f"📰 Requesting news for: {category}")
         
@@ -41,8 +45,13 @@ async def show_news(request: Request, category: str):
                 cache_status = "fresh_fetch"
                 last_updated = datetime.datetime.now()
                 
-                # Cache the fresh articles for next time
-                cache_success = await simple_cache.set_news(category, articles, ttl_seconds=7200)  # 2 hours
+                # Cache with appropriate TTL based on category
+                if category == "Europska_unija":
+                    ttl_seconds = 21600  # 6 hours for EU news
+                else:
+                    ttl_seconds = 7200   # 2 hours for other categories
+                
+                cache_success = await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
                 
                 if cache_success:
                     print(f"✅ Cached {len(articles)} articles for {category}")
@@ -59,7 +68,7 @@ async def show_news(request: Request, category: str):
             "request": request,
             "category": category,
             "articles": articles,
-            "title": f"AI Novine - {category}",
+            "title": f"AI Novine - {category.replace('_', ' ')}",
             "cache_status": cache_status,
             "last_updated": last_updated,
             "cache_age_minutes": cache_age_minutes if 'cache_age_minutes' in locals() else None
@@ -77,7 +86,11 @@ async def show_news(request: Request, category: str):
 async def get_news_api(category: str):
     """API endpoint for news with caching"""
     try:
-        category = category.capitalize()
+        # Handle URL-friendly EU category name
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
+        else:
+            category = category.capitalize()
         
         print(f"📡 API request for: {category}")
         
@@ -109,8 +122,13 @@ async def get_news_api(category: str):
                 articles = parse_news_content(result)
                 current_time = datetime.datetime.now()
                 
-                # Cache the fresh data
-                await simple_cache.set_news(category, articles, ttl_seconds=7200)
+                # Cache with appropriate TTL
+                if category == "Europska_unija":
+                    ttl_seconds = 21600  # 6 hours for EU news
+                else:
+                    ttl_seconds = 7200   # 2 hours for other categories
+                
+                await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
                 
                 return {
                     "category": category,
@@ -136,10 +154,14 @@ async def get_news_api(category: str):
 async def refresh_news(category: str, background_tasks: BackgroundTasks):
     """Force refresh news for a category (clears cache)"""
     try:
-        category = category.capitalize()
+        # Handle URL-friendly EU category name
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
+        else:
+            category = category.capitalize()
         
-        # Validate category
-        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Sport", "Regija"]
+        # Updated valid categories list to include EU
+        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
         if category not in valid_categories:
             raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
         
@@ -162,8 +184,9 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
 
 @router.get("/api/cache-status")
 async def cache_status():
-    """Get cache status for all categories"""
-    categories = ["Hrvatska", "Svijet", "Ekonomija", "Sport", "Regija"]
+    """Get cache status for all categories including EU"""
+    # Updated categories list to include EU and Technology
+    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
     status = {}
     
     for category in categories:
@@ -174,13 +197,19 @@ async def cache_status():
             cache_age_seconds = (datetime.datetime.now() - cache_timestamp).total_seconds()
             cache_age_minutes = cache_age_seconds / 60
             
+            # Different cache validity periods for different categories
+            if category == "Europska_unija":
+                cache_valid_seconds = 21600  # 6 hours for EU
+            else:
+                cache_valid_seconds = 7200   # 2 hours for others
+            
             status[category] = {
                 "cached": True,
                 "articles_count": len(cached_articles),
                 "last_updated": cache_timestamp.isoformat(),
                 "cache_age_seconds": cache_age_seconds,
                 "cache_age_minutes": cache_age_minutes,
-                "cache_valid": cache_age_seconds < 7200,  # 2 hours
+                "cache_valid": cache_age_seconds < cache_valid_seconds,
                 "source": "redis"
             }
         else:
@@ -204,6 +233,119 @@ async def cache_status():
         "timestamp": datetime.datetime.now().isoformat()
     }
 
+# EU-specific API endpoints
+@router.get("/api/eu-sources")
+async def get_eu_sources():
+    """Get information about EU RSS sources"""
+    eu_sources = {
+        "sources": [
+            {
+                "name": "European Commission",
+                "url": "https://ec.europa.eu/commission/presscorner/rss/en",
+                "description": "Official EU policy announcements and press releases",
+                "type": "Official"
+            },
+            {
+                "name": "European Parliament", 
+                "url": "https://www.europarl.europa.eu/rss/en/top-stories.xml",
+                "description": "Legislative decisions and parliamentary news",
+                "type": "Official"
+            },
+            {
+                "name": "EurActiv",
+                "url": "https://www.euractiv.com/feed/",
+                "description": "EU policy analysis and stakeholder reactions",
+                "type": "Analysis"
+            },
+            {
+                "name": "EUR-Lex",
+                "url": "https://eur-lex.europa.eu/rss/legal-content.xml", 
+                "description": "Legal acts and regulatory updates",
+                "type": "Legal"
+            },
+            {
+                "name": "POLITICO Europe",
+                "url": "https://www.politico.eu/rss/politics/",
+                "description": "Political context and insider analysis",
+                "type": "Political"
+            }
+        ],
+        "total_sources": 5,
+        "update_frequency": "3 times daily",
+        "focus": "Croatian impact analysis",
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+    
+    return eu_sources
+
+@router.get("/api/categories")
+async def get_all_categories():
+    """Get all available news categories"""
+    categories = {
+        "Hrvatska": {
+            "name": "Hrvatska",
+            "icon": "🇭🇷",
+            "description": "Najnovije vijesti iz domaćih medija",
+            "url": "/news/hrvatska",
+            "priority": "high",
+            "frequency": "6x/day"
+        },
+        "Svijet": {
+            "name": "Svijet", 
+            "icon": "🌍",
+            "description": "Međunarodne vijesti prevedene na hrvatski",
+            "url": "/news/svijet",
+            "priority": "high",
+            "frequency": "6x/day"
+        },
+        "Ekonomija": {
+            "name": "Ekonomija",
+            "icon": "💼", 
+            "description": "Poslovne i ekonomske vijesti",
+            "url": "/news/ekonomija",
+            "priority": "medium",
+            "frequency": "4x/day"
+        },
+        "Tehnologija": {
+            "name": "Tehnologija",
+            "icon": "💻",
+            "description": "Najnoviji tehnološki trendovi",
+            "url": "/news/tehnologija", 
+            "priority": "medium",
+            "frequency": "4x/day"
+        },
+        "Sport": {
+            "name": "Sport",
+            "icon": "⚽",
+            "description": "Sportske vijesti iz Hrvatske i svijeta",
+            "url": "/news/sport",
+            "priority": "medium", 
+            "frequency": "4x/day"
+        },
+        "Regija": {
+            "name": "Regija",
+            "icon": "🏛️",
+            "description": "Vijesti iz susjednih zemalja",
+            "url": "/news/regija",
+            "priority": "low",
+            "frequency": "1x/day"
+        },
+        "Europska_unija": {
+            "name": "Europska unija",
+            "icon": "🇪🇺", 
+            "description": "EU vijesti objašnjene za hrvatske građane",
+            "url": "/news/europska-unija",
+            "priority": "medium",
+            "frequency": "3x/day"
+        }
+    }
+    
+    return {
+        "categories": categories,
+        "total_categories": len(categories),
+        "timestamp": datetime.datetime.now().isoformat()
+    }
+
 # Background task functions
 async def trigger_fresh_fetch_and_cache(category: str):
     """Background task to fetch fresh news and cache it"""
@@ -215,8 +357,13 @@ async def trigger_fresh_fetch_and_cache(category: str):
         if result and not result.startswith("Trenutno nije moguće"):
             articles = parse_news_content(result)
             
-            # Cache the fresh articles
-            cache_success = await simple_cache.set_news(category, articles, ttl_seconds=7200)
+            # Cache with appropriate TTL
+            if category == "Europska_unija":
+                ttl_seconds = 21600  # 6 hours for EU news
+            else:
+                ttl_seconds = 7200   # 2 hours for other categories
+            
+            cache_success = await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
             
             if cache_success:
                 print(f"✅ Background fetch completed for {category}: {len(articles)} articles cached")

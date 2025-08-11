@@ -11,7 +11,7 @@ load_dotenv()
 # Get API key from environment
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-# RSS Feeds configuration with new Technology category
+# RSS Feeds configuration - UPDATED with EU category
 RSS_FEEDS = {
     "Hrvatska": [
         "https://vijesti.hrt.hr/rss",
@@ -37,13 +37,11 @@ RSS_FEEDS = {
         "https://www.forbes.com/business/feed/",
     ],
     "Tehnologija": [
-        "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
-        "https://feeds.bbci.co.uk/news/technology/rss.xml",
-        "https://www.theguardian.com/technology/rss",
-        "https://techcrunch.com/feed/",
-        "https://feeds.feedburner.com/oreilly/radar",
+        "https://feeds.feedburner.com/TechCrunch/",
         "https://www.wired.com/feed/rss",
-        "https://arstechnica.com/feed/",
+        "http://feeds.arstechnica.com/arstechnica/index",
+        "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml",
+        "https://www.theverge.com/rss/index.xml",
     ],
     "Sport_HR": [
         "https://www.index.hr/rss/sport",
@@ -87,13 +85,21 @@ RSS_FEEDS = {
         "https://www.tt.com/rss",
         "https://kurier.at/rss",
     ],
+    # NEW EU CATEGORY
+    "Europska_unija": [
+        "https://ec.europa.eu/commission/presscorner/rss/en",
+        "https://www.europarl.europa.eu/rss/en/top-stories.xml",
+        "https://www.euractiv.com/feed/",
+        "https://eur-lex.europa.eu/rss/legal-content.xml",
+        "https://www.politico.eu/rss/politics/",
+    ],
 }
 
 IZVORNI_JEZIK = {
     "Hrvatska": "hr",
     "Svijet": "en",
     "Ekonomija": "en",
-    "Tehnologija": "en",  # New technology category
+    "Tehnologija": "en",
     "Sport_HR": "hr",
     "Sport_World": "en",
     "Sport": "mixed",
@@ -102,6 +108,7 @@ IZVORNI_JEZIK = {
     "Italija": "it",
     "Austrija": "de",
     "Regija": "mixed",
+    "Europska_unija": "en",  # NEW: EU content is primarily in English
 }
 
 def ocisti_html(html_tekst):
@@ -220,11 +227,13 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
         elif kategorija == "Ekonomija":
             context_prompt = "ekonomskih/poslovnih vijesti, objasni ekonomske implikacije"
         elif kategorija == "Tehnologija":
-            context_prompt = "tehnoloških vijesti, objasni tehnološke napretke i implikacije za budućnost"
+            context_prompt = "tehnoloških vijesti, objasni kako tehnologija utječe na svakodnevni život"
         elif kategorija == "Sport":
             context_prompt = "sportskih vijesti, dodaj kontekst o sportskim postignućima i značaju"
         elif kategorija == "Regija":
             context_prompt = "regionalnih vijesti iz susjednih zemalja, objasni važnost za Hrvatsku"
+        elif kategorija == "Europska_unija":
+            context_prompt = "EU vijesti, objasni kako EU odluke utječu na hrvatske građane i tvrtke"
         else:
             context_prompt = "vijesti, dodaj relevantni kontekst"
         
@@ -234,24 +243,46 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
         else:
             language_instruction = f"Prevedi s {izvorni_jezik} jezika na hrvatski i proširi"
         
-        prompt = f"""
-        Na temelju sljedećeg naslova i kratkog opisa {context_prompt}.
+        # Special handling for EU news
+        if kategorija == "Europska_unija":
+            prompt = f"""
+            Na temelju sljedećeg EU naslova i kratkog opisa, stvori sažetak koji objašnjava kako ova EU odluka ili vijest utječe na hrvatske građane i tvrtke.
 
-        Naslov: {naslov}
-        Kratki opis: {kratki_tekst}
+            Naslov: {naslov}
+            Kratki opis: {kratki_tekst}
 
-        Molim te:
-        1. {language_instruction}
-        2. Proširi informacije logično i prirodno
-        3. Dodaj kontekst relevantan za temu i kategoriju {kategorija}
-        4. Zadrži faktičnost - ne izmišljaj nove činjenice
-        5. Piši na hrvatskom jeziku
-        6. Duljina: 200-400 riječi
-        7. Budi informativan i jasan
-        8. Struktura: uvod, glavne informacije, kontekst/zaključak
+            Molim te:
+            1. Prevedi s engleskog jezika na hrvatski
+            2. Objasni što ova EU odluka/vijest znači za Hrvatsku
+            3. Kada će se promjene implementirati u Hrvatskoj
+            4. Što hrvatski građani/tvrtke trebaju znati ili učiniti
+            5. Dodaj kontekst o tome kako ovo utječe na hrvatski pravni sustav ili ekonomiju
+            6. Zadrži faktičnost - ne izmišljaj nove činjenice
+            7. Piši na hrvatskom jeziku
+            8. Duljina: 200-400 riječi
+            9. Struktura: uvod, što se dogodilo, utjecaj na Hrvatsku, što dalje
 
-        Odgovori samo proširenim sažetkom na hrvatskom jeziku, bez dodatnih objašnjenja:
-        """
+            Odgovori samo proširenim sažetkom na hrvatskom jeziku:
+            """
+        else:
+            prompt = f"""
+            Na temelju sljedećeg naslova i kratkog opisa {context_prompt}.
+
+            Naslov: {naslov}
+            Kratki opis: {kratki_tekst}
+
+            Molim te:
+            1. {language_instruction}
+            2. Proširi informacije logično i prirodno
+            3. Dodaj kontekst relevantan za temu i kategoriju {kategorija}
+            4. Zadrži faktičnost - ne izmišljaj nove činjenice
+            5. Piši na hrvatskom jeziku
+            6. Duljina: 200-400 riječi
+            7. Budi informativan i jasan
+            8. Struktura: uvod, glavne informacije, kontekst/zaključak
+
+            Odgovori samo proširenim sažetkom na hrvatskom jeziku, bez dodatnih objašnjenja:
+            """
         
         response = client.invoke(prompt)
         enhanced_summary = response.content.strip()
@@ -484,7 +515,7 @@ def generiraj_tehnologija_vijesti():
     """Dohvaća, prevodi i AI-poboljšava najnovije tehnološke vijesti iz RSS feedova"""
     try:
         print("💻 Fetching technology news...")
-        vijesti = dohvati_vijesti_iz_rss("Tehnologija", broj_vijesti=5)
+        vijesti = dohvati_vijesti_iz_rss("Tehnologija", broj_vijesti=6)
         
         if not vijesti:
             print("❌ No technology news fetched")
@@ -614,6 +645,37 @@ def generiraj_regija_vijesti():
         print(f"❌ Error generating regional news: {str(e)}")
         raise Exception(f"Greška pri generiranju regionalnih vijesti: {str(e)}")
 
+# NEW FUNCTION FOR EU NEWS
+def generiraj_europska_unija_vijesti():
+    """
+    Dohvaća najnovije EU vijesti iz službenih izvora i objašnjava njihov utjecaj na Hrvatsku
+    """
+    try:
+        print("🇪🇺 Fetching EU news...")
+        vijesti = dohvati_vijesti_iz_rss("Europska_unija", broj_vijesti=6)
+        
+        if not vijesti:
+            print("❌ No EU news fetched")
+            return None
+            
+        print(f"📰 Fetched {len(vijesti)} EU news articles")
+        print("🔄 Starting translation to Croatian...")
+        
+        # First translate
+        translated_news = prevedi_vijesti(vijesti, "en", "hr")
+        
+        if not translated_news:
+            print("❌ EU news translation failed")
+            return None
+        
+        # Then create AI-enhanced summaries with Croatian impact analysis
+        print("🤖 Creating AI-enhanced summaries for EU news with Croatian impact...")
+        return stvori_ai_poboljsane_vijesti(translated_news, "Europska_unija", "en")
+        
+    except Exception as e:
+        print(f"❌ Error generating EU news: {str(e)}")
+        raise Exception(f"Greška pri generiranju EU vijesti: {str(e)}")
+
 def generiraj_vijesti(kategorija, spinner_callback=None):
     """
     Generira vijesti prema odabranoj kategoriji.
@@ -625,13 +687,14 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             "Hrvatske vijesti": "Hrvatska",
             "Svjetske vijesti": "Svijet",
             "Ekonomske vijesti": "Ekonomija",
-            "Tehnološke vijesti": "Tehnologija",  # New mapping
+            "Tehnološke vijesti": "Tehnologija",
             "Hrvatske sportske vijesti": "Sport",
             "Svjetske sportske vijesti": "Sport",
             "Slovenske vijesti": "Regija",
             "Mađarske vijesti": "Regija",
             "Talijanske vijesti": "Regija",
-            "Austrijske vijesti": "Regija"
+            "Austrijske vijesti": "Regija",
+            "EU vijesti": "Europska_unija",
         }
         
         if kategorija in kategorija_mapping:
@@ -648,7 +711,7 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             vijesti = generiraj_ekonomija_vijesti()  # Now AI-enhanced
             filename_prefix = "ekonomija"
         elif kategorija == "Tehnologija":
-            vijesti = generiraj_tehnologija_vijesti()  # New AI-enhanced
+            vijesti = generiraj_tehnologija_vijesti()  # Now AI-enhanced
             filename_prefix = "tehnologija"
         elif kategorija == "Sport":
             vijesti = generiraj_sport_vijesti()  # Now AI-enhanced
@@ -656,6 +719,9 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         elif kategorija == "Regija":
             vijesti = generiraj_regija_vijesti()  # Now AI-enhanced
             filename_prefix = "regija"
+        elif kategorija == "Europska_unija":
+            vijesti = generiraj_europska_unija_vijesti()  # NEW EU category
+            filename_prefix = "europska_unija"
         else:
             return f"Nepoznata kategorija: {kategorija}", None
         

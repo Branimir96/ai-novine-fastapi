@@ -326,6 +326,22 @@
         {% endif %}
         <a href="/news/regija" class="category-link">📖 Čitaj vijesti</a>
     </div>
+     <!-- NEW EU Category Card -->
+     <div class="category-card eu-card">
+        <h3>🇪🇺 Europska unija</h3>
+        <p>EU vijesti objašnjene za hrvatske građane - propisi, fondovi, politika</p>
+        {% if category_cache_status and category_cache_status.Europska_unija and category_cache_status.Europska_unija.has_cache %}
+        <div class="category-status">
+            ✅ {{ category_cache_status.Europska_unija.count }} članaka u cache
+        </div>
+        {% else %}
+        <div class="category-status">
+            ⏳ Priprema se sadržaj...
+        </div>
+        {% endif %}
+        <a href="/news/europska-unija" class="category-link">📖 Čitaj vijesti</a>
+    </div>
+</div>
 </div>
 
 <!-- HARDCODED Portal Statistics - NO TEMPLATE VARIABLES -->
