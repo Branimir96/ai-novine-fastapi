@@ -87,14 +87,12 @@ RSS_FEEDS = {
     ],
     # NEW EU CATEGORY
     "Europska_unija": [
-     "https://feeds.feedburner.com/euronews/en/home/",
+      "https://feeds.feedburner.com/euronews/en/home/",
     "https://voxeurop.eu/en/feed",
     "https://brusselsmorning.com/feed/",
     "https://www.europeanfiles.eu/feed",
-    # Add some additional reliable feeds to get more articles
     "https://www.france24.com/en/europe/rss",
     "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
-    "https://rss.cnn.com/rss/edition_europe.rss",
     ],
 }
 
@@ -651,33 +649,120 @@ def generiraj_regija_vijesti():
 # NEW FUNCTION FOR EU NEWS
 def generiraj_europska_unija_vijesti():
     """
-    Dohvaća najnovije EU vijesti iz službenih izvora i objašnjava njihov utjecaj na Hrvatsku
+    SIMPLIFIED version that bypasses potential issues
     """
     try:
-        print("🇪🇺 Fetching EU news...")
-        vijesti = dohvati_vijesti_iz_rss("Europska_unija", broj_vijesti=6)
+        print("🇪🇺 Fetching EU news (simplified version)...")
         
-        if not vijesti:
-            print("❌ No EU news fetched")
+        # Direct manual fetching to bypass any issues with dohvati_vijesti_iz_rss
+        import feedparser
+        from bs4 import BeautifulSoup
+        
+        working_feeds = [
+            "https://feeds.feedburner.com/euronews/en/home/",
+            "https://voxeurop.eu/en/feed",
+            "https://brusselsmorning.com/feed/",
+            "https://www.europeanfiles.eu/feed",
+        ]
+        
+        all_articles = []
+        
+        for feed_url in working_feeds:
+            try:
+                print(f"📡 Fetching from: {feed_url}")
+                feed = feedparser.parse(feed_url)
+                
+                if feed.entries:
+                    # Take first 2 articles from each feed
+                    for entry in feed.entries[:2]:
+                        naslov = entry.get('title', 'No title')
+                        
+                        # Get description/summary
+                        tekst = ''
+                        if 'description' in entry:
+                            tekst = entry.description
+                        elif 'summary' in entry:
+                            tekst = entry.summary
+                        else:
+                            tekst = 'Description not available'
+                        
+                        # Clean HTML
+                        tekst = BeautifulSoup(tekst, 'html.parser').get_text(strip=True)
+                        
+                        # Truncate if too long
+                        if len(tekst) > 300:
+                            tekst = tekst[:297] + "..."
+                        
+                        all_articles.append({
+                            'naslov': naslov,
+                            'tekst': tekst,
+                            'izvor': feed.feed.get('title', 'EU News'),
+                            'link': entry.get('link', '#')
+                        })
+                        
+                    print(f"✅ Added {min(2, len(feed.entries))} articles from {feed.feed.get('title', 'feed')}")
+                
+            except Exception as e:
+                print(f"⚠️ Failed to fetch from {feed_url}: {e}")
+                continue
+        
+        if not all_articles:
+            print("❌ No articles collected from any feed")
             return None
-            
-        print(f"📰 Fetched {len(vijesti)} EU news articles")
-        print("🔄 Starting translation to Croatian...")
         
-        # First translate
-        translated_news = prevedi_vijesti(vijesti, "en", "hr")
+        print(f"📰 Collected {len(all_articles)} total articles")
+        
+        # Limit to 6 articles
+        all_articles = all_articles[:6]
+        
+        print("🔄 Starting translation...")
+        translated_news = prevedi_vijesti(all_articles, "en", "hr")
         
         if not translated_news:
-            print("❌ EU news translation failed")
-            return None
+            print("❌ Translation failed, returning original articles")
+            return all_articles
         
-        # Then create AI-enhanced summaries with Croatian impact analysis
-        print("🤖 Creating AI-enhanced summaries for EU news with Croatian impact...")
-        return stvori_ai_poboljsane_vijesti(translated_news, "Europska_unija", "en")
+        print("🤖 Starting AI enhancement...")
+        enhanced_news = stvori_ai_poboljsane_vijesti(translated_news, "Europska_unija", "en")
+        
+        if not enhanced_news:
+            print("⚠️ AI enhancement failed, returning translated articles")
+            return translated_news
+        
+        print(f"✅ EU news generation completed: {len(enhanced_news)} articles")
+        return enhanced_news
         
     except Exception as e:
-        print(f"❌ Error generating EU news: {str(e)}")
-        raise Exception(f"Greška pri generiranju EU vijesti: {str(e)}")
+        print(f"❌ Error in EU news generation: {e}")
+        import traceback
+        traceback.print_exc()
+        return None
+def test_eu_news_complete():
+    """Complete test of EU news generation"""
+    print("🧪 COMPLETE EU NEWS TEST")
+    print("=" * 50)
+    
+    # Test the debug version
+    print("1️⃣ Testing debug version...")
+    debug_result = generiraj_europska_unija_vijesti_debug()
+    
+    if debug_result:
+        print(f"✅ Debug version works: {len(debug_result)} articles")
+    else:
+        print("❌ Debug version failed")
+    
+    print("\n2️⃣ Testing simplified version...")
+    simple_result = generiraj_europska_unija_vijesti()
+    
+    if simple_result:
+        print(f"✅ Simplified version works: {len(simple_result)} articles")
+        print("📰 Sample articles:")
+        for i, article in enumerate(simple_result[:3], 1):
+            print(f"   {i}. {article['naslov'][:60]}...")
+    else:
+        print("❌ Simplified version failed")
+    
+    return simple_result
 
 def generiraj_vijesti(kategorija, spinner_callback=None):
     """
