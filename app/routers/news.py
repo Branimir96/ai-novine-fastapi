@@ -14,7 +14,7 @@ async def show_news(request: Request, category: str):
     """Display news for a specific category with caching"""
     try:
         # Handle URL-friendly EU category name
-        if category.lower() == "europska-unija":
+        if category.lower() == "europska unija":
             category = "Europska unija"
         else:
             category = category.capitalize()
@@ -87,8 +87,8 @@ async def get_news_api(category: str):
     """API endpoint for news with caching"""
     try:
         # Handle URL-friendly EU category name
-        if category.lower() == "europska-unija":
-            category = "Europska_unija"
+        if category.lower() == "europska unija":
+            category = "Europska unija"
         else:
             category = category.capitalize()
         
@@ -123,7 +123,7 @@ async def get_news_api(category: str):
                 current_time = datetime.datetime.now()
                 
                 # Cache with appropriate TTL
-                if category == "Europska_unija":
+                if category == "Europska unija":
                     ttl_seconds = 21600  # 6 hours for EU news
                 else:
                     ttl_seconds = 7200   # 2 hours for other categories
@@ -155,13 +155,13 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
     """Force refresh news for a category (clears cache)"""
     try:
         # Handle URL-friendly EU category name
-        if category.lower() == "europska-unija":
-            category = "Europska_unija"
+        if category.lower() == "europska unija":
+            category = "Europska unija"
         else:
             category = category.capitalize()
         
         # Updated valid categories list to include EU
-        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
+        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska unija"]
         if category not in valid_categories:
             raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
         
@@ -186,7 +186,7 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
 async def cache_status():
     """Get cache status for all categories including EU"""
     # Updated categories list to include EU and Technology
-    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
+    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska unija"]
     status = {}
     
     for category in categories:
@@ -198,7 +198,7 @@ async def cache_status():
             cache_age_minutes = cache_age_seconds / 60
             
             # Different cache validity periods for different categories
-            if category == "Europska_unija":
+            if category == "Europska unija":
                 cache_valid_seconds = 21600  # 6 hours for EU
             else:
                 cache_valid_seconds = 7200   # 2 hours for others
@@ -334,7 +334,7 @@ async def get_all_categories():
             "name": "Europska unija",
             "icon": "🇪🇺", 
             "description": "EU vijesti objašnjene za hrvatske građane",
-            "url": "/news/europska-unija",
+            "url": "/news/europska unija",
             "priority": "medium",
             "frequency": "3x/day"
         }
@@ -358,7 +358,7 @@ async def trigger_fresh_fetch_and_cache(category: str):
             articles = parse_news_content(result)
             
             # Cache with appropriate TTL
-            if category == "Europska_unija":
+            if category == "Europska unija":
                 ttl_seconds = 21600  # 6 hours for EU news
             else:
                 ttl_seconds = 7200   # 2 hours for other categories

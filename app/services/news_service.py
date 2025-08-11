@@ -233,7 +233,7 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
             context_prompt = "sportskih vijesti, dodaj kontekst o sportskim postignućima i značaju"
         elif kategorija == "Regija":
             context_prompt = "regionalnih vijesti iz susjednih zemalja, objasni važnost za Hrvatsku"
-        elif kategorija == "Europska_unija":
+        elif kategorija == "Europska unija":
             context_prompt = "EU vijesti, objasni kako EU odluke utječu na hrvatske građane i tvrtke"
         else:
             context_prompt = "vijesti, dodaj relevantni kontekst"
@@ -245,7 +245,7 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
             language_instruction = f"Prevedi s {izvorni_jezik} jezika na hrvatski i proširi"
         
         # Special handling for EU news
-        if kategorija == "Europska_unija":
+        if kategorija == "Europska unija":
             prompt = f"""
             Na temelju sljedećeg EU naslova i kratkog opisa, stvori sažetak koji objašnjava kako ova EU odluka ili vijest utječe na hrvatske građane i tvrtke.
 
@@ -723,7 +723,7 @@ def generiraj_europska_unija_vijesti():
             return all_articles
         
         print("🤖 Starting AI enhancement...")
-        enhanced_news = stvori_ai_poboljsane_vijesti(translated_news, "Europska_unija", "en")
+        enhanced_news = stvori_ai_poboljsane_vijesti(translated_news, "Europska unija", "en")
         
         if not enhanced_news:
             print("⚠️ AI enhancement failed, returning translated articles")
@@ -782,7 +782,7 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             "Mađarske vijesti": "Regija",
             "Talijanske vijesti": "Regija",
             "Austrijske vijesti": "Regija",
-            "EU vijesti": "Europska_unija",
+            "EU vijesti": "Europska unija",
         }
         
         if kategorija in kategorija_mapping:
@@ -807,9 +807,9 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         elif kategorija == "Regija":
             vijesti = generiraj_regija_vijesti()  # Now AI-enhanced
             filename_prefix = "regija"
-        elif kategorija == "Europska_unija":
+        elif kategorija == "Europska unija":
             vijesti = generiraj_europska_unija_vijesti()  # NEW EU category
-            filename_prefix = "europska_unija"
+            filename_prefix = "europska unija"
         else:
             return f"Nepoznata kategorija: {kategorija}", None
         
