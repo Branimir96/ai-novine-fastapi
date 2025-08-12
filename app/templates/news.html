@@ -248,12 +248,12 @@
         box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
     }
 
-    .share-twitter:active {
-        background: #1DA1F2;
+    .share-x:active {
+        background: #000000;
         color: white;
-        border-color: #1DA1F2;
+        border-color: #000000;
         transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(29, 161, 242, 0.3);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .share-linkedin:active {
@@ -498,11 +498,11 @@
             box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
         }
 
-        .share-twitter:hover {
-            background: #1DA1F2;
+        .share-x:hover {
+            background: #000000;
             color: white;
-            border-color: #1DA1F2;
-            box-shadow: 0 4px 12px rgba(29, 161, 242, 0.2);
+            border-color: #000000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .share-linkedin:hover {
@@ -609,8 +609,8 @@
                     <a href="#" class="share-button share-whatsapp" onclick="shareToWhatsApp(this)" title="Podijeli na WhatsApp">
                         📱 WhatsApp
                     </a>
-                    <a href="#" class="share-button share-twitter" onclick="shareToTwitter(this)" title="Podijeli na X (Twitter)">
-                        🐦 Twitter
+                    <a href="#" class="share-button share-x" onclick="shareToX(this)" title="Podijeli na X">
+                        ✖️ X
                     </a>
                     <a href="#" class="share-button share-linkedin" onclick="shareToLinkedIn(this)" title="Podijeli na LinkedIn">
                         💼 LinkedIn
@@ -712,15 +712,15 @@ function shareToWhatsApp(button) {
     window.open(whatsappUrl, '_blank');
 }
 
-function shareToTwitter(button) {
+function shareToX(button) {
     const data = getArticleData(button);
     const tweet = `${data.title}\n\n${data.text}\n\n${data.url} #AIVijesti #Hrvatska`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
     
     button.style.transform = 'scale(0.95)';
     setTimeout(() => button.style.transform = '', 150);
     
-    window.open(twitterUrl, '_blank');
+    window.open(xUrl, '_blank');
 }
 
 function shareToLinkedIn(button) {
