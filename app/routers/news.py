@@ -13,11 +13,14 @@ templates = Jinja2Templates(directory="app/templates")
 async def show_news(request: Request, category: str):
     """Display news for a specific category with caching"""
     try:
-        # Handle URL-friendly EU category name - FIXED
+        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
             category = category.capitalize()
+        
+        # Create display-friendly name
+        display_category = category.replace('_', ' ')
         
         print(f"📰 Requesting news for: {category}")
         
@@ -66,9 +69,9 @@ async def show_news(request: Request, category: str):
         
         return templates.TemplateResponse("news.html", {
             "request": request,
-            "category": category,
+            "category": display_category,  # ✅ FIXED: Shows "Europska unija" without underscore
             "articles": articles,
-            "title": f"AI Novine - {category.replace('_', ' ')}",
+            "title": f"AI Novine - {display_category}",
             "cache_status": cache_status,
             "last_updated": last_updated,
             "cache_age_minutes": cache_age_minutes if 'cache_age_minutes' in locals() else None
@@ -86,7 +89,7 @@ async def show_news(request: Request, category: str):
 async def get_news_api(category: str):
     """API endpoint for news with caching"""
     try:
-        # Handle URL-friendly EU category name - FIXED
+        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
@@ -103,7 +106,7 @@ async def get_news_api(category: str):
             cache_age_seconds = (datetime.datetime.now() - cache_timestamp).total_seconds() if cache_timestamp else 0
             
             return {
-                "category": category,
+                "category": category.replace('_', ' '),  # ✅ Display-friendly name in API too
                 "articles": cached_articles,
                 "count": len(cached_articles),
                 "cache_info": {
@@ -131,7 +134,7 @@ async def get_news_api(category: str):
                 await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
                 
                 return {
-                    "category": category,
+                    "category": category.replace('_', ' '),  # ✅ Display-friendly name in API too
                     "articles": articles,
                     "count": len(articles),
                     "cache_info": {
@@ -154,13 +157,13 @@ async def get_news_api(category: str):
 async def refresh_news(category: str, background_tasks: BackgroundTasks):
     """Force refresh news for a category (clears cache)"""
     try:
-        # Handle URL-friendly EU category name - FIXED
+        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
             category = category.capitalize()
         
-        # Updated valid categories list to include EU - FIXED
+        # Updated valid categories list to include EU
         valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
         if category not in valid_categories:
             raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
@@ -174,8 +177,8 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
         
         return {
             "status": "success",
-            "message": f"Cache cleared and fresh fetch started for {category}",
-            "category": category,
+            "message": f"Cache cleared and fresh fetch started for {category.replace('_', ' ')}",
+            "category": category.replace('_', ' '),  # ✅ Display-friendly name
             "cache_cleared": cleared
         }
         
@@ -185,13 +188,16 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
 @router.get("/api/cache-status")
 async def cache_status():
     """Get cache status for all categories including EU"""
-    # Updated categories list to include EU and Technology - FIXED
+    # Updated categories list to include EU and Technology
     categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
     status = {}
     
     for category in categories:
         cached_articles = await simple_cache.get_news(category)
         cache_timestamp = await simple_cache.get_timestamp(category)
+        
+        # Use display-friendly name for output
+        display_name = category.replace('_', ' ')
         
         if cached_articles and cache_timestamp:
             cache_age_seconds = (datetime.datetime.now() - cache_timestamp).total_seconds()
@@ -203,7 +209,7 @@ async def cache_status():
             else:
                 cache_valid_seconds = 7200   # 2 hours for others
             
-            status[category] = {
+            status[display_name] = {  # ✅ Use display name as key
                 "cached": True,
                 "articles_count": len(cached_articles),
                 "last_updated": cache_timestamp.isoformat(),
@@ -213,7 +219,7 @@ async def cache_status():
                 "source": "redis"
             }
         else:
-            status[category] = {
+            status[display_name] = {  # ✅ Use display name as key
                 "cached": False,
                 "articles_count": 0,
                 "last_updated": None,
@@ -330,7 +336,7 @@ async def get_all_categories():
             "priority": "low",
             "frequency": "1x/day"
         },
-        "Europska_unija": {
+        "Europska unija": {  # ✅ Display name without underscore
             "name": "Europska unija",
             "icon": "🇪🇺", 
             "description": "EU vijesti objašnjene za hrvatske građane",
