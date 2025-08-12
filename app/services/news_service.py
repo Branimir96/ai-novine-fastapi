@@ -85,14 +85,14 @@ RSS_FEEDS = {
         "https://www.tt.com/rss",
         "https://kurier.at/rss",
     ],
-    # NEW EU CATEGORY
+    # FIXED EU CATEGORY - Only working feeds
     "Europska_unija": [
-      "https://feeds.feedburner.com/euronews/en/home/",
-    "https://voxeurop.eu/en/feed",
-    "https://brusselsmorning.com/feed/",
-    "https://www.europeanfiles.eu/feed",
-    "https://www.france24.com/en/europe/rss",
-    "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
+        "https://feeds.feedburner.com/euronews/en/home/",
+        "https://voxeurop.eu/en/feed",
+        "https://brusselsmorning.com/feed/",
+        "https://www.europeanfiles.eu/feed",
+        "https://www.france24.com/en/europe/rss",
+        "https://feeds.bbci.co.uk/news/world/europe/rss.xml",
     ],
 }
 
@@ -109,7 +109,7 @@ IZVORNI_JEZIK = {
     "Italija": "it",
     "Austrija": "de",
     "Regija": "mixed",
-    "Europska_unija": "en",  # NEW: EU content is primarily in English
+    "Europska_unija": "en",  # FIXED: EU content is primarily in English
 }
 
 def ocisti_html(html_tekst):
@@ -233,7 +233,7 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
             context_prompt = "sportskih vijesti, dodaj kontekst o sportskim postignućima i značaju"
         elif kategorija == "Regija":
             context_prompt = "regionalnih vijesti iz susjednih zemalja, objasni važnost za Hrvatsku"
-        elif kategorija == "Europska unija":
+        elif kategorija == "Europska_unija":  # FIXED: underscore instead of space
             context_prompt = "EU vijesti, objasni kako EU odluke utječu na hrvatske građane i tvrtke"
         else:
             context_prompt = "vijesti, dodaj relevantni kontekst"
@@ -245,7 +245,7 @@ def generiraj_ai_sazetak(naslov, kratki_tekst, kategorija="općenito", izvorni_j
             language_instruction = f"Prevedi s {izvorni_jezik} jezika na hrvatski i proširi"
         
         # Special handling for EU news
-        if kategorija == "Europska unija":
+        if kategorija == "Europska_unija":  # FIXED: underscore instead of space
             prompt = f"""
             Na temelju sljedećeg EU naslova i kratkog opisa, stvori sažetak koji objašnjava kako ova EU odluka ili vijest utječe na hrvatske građane i tvrtke.
 
@@ -646,7 +646,7 @@ def generiraj_regija_vijesti():
         print(f"❌ Error generating regional news: {str(e)}")
         raise Exception(f"Greška pri generiranju regionalnih vijesti: {str(e)}")
 
-# NEW FUNCTION FOR EU NEWS
+# FIXED EU NEWS FUNCTION
 def generiraj_europska_unija_vijesti():
     """
     SIMPLIFIED version that bypasses potential issues
@@ -723,7 +723,7 @@ def generiraj_europska_unija_vijesti():
             return all_articles
         
         print("🤖 Starting AI enhancement...")
-        enhanced_news = stvori_ai_poboljsane_vijesti(translated_news, "Europska unija", "en")
+        enhanced_news = stvori_ai_poboljsane_vijesti(translated_news, "Europska_unija", "en")
         
         if not enhanced_news:
             print("⚠️ AI enhancement failed, returning translated articles")
@@ -737,32 +737,6 @@ def generiraj_europska_unija_vijesti():
         import traceback
         traceback.print_exc()
         return None
-def test_eu_news_complete():
-    """Complete test of EU news generation"""
-    print("🧪 COMPLETE EU NEWS TEST")
-    print("=" * 50)
-    
-    # Test the debug version
-    print("1️⃣ Testing debug version...")
-    debug_result = generiraj_europska_unija_vijesti_debug()
-    
-    if debug_result:
-        print(f"✅ Debug version works: {len(debug_result)} articles")
-    else:
-        print("❌ Debug version failed")
-    
-    print("\n2️⃣ Testing simplified version...")
-    simple_result = generiraj_europska_unija_vijesti()
-    
-    if simple_result:
-        print(f"✅ Simplified version works: {len(simple_result)} articles")
-        print("📰 Sample articles:")
-        for i, article in enumerate(simple_result[:3], 1):
-            print(f"   {i}. {article['naslov'][:60]}...")
-    else:
-        print("❌ Simplified version failed")
-    
-    return simple_result
 
 def generiraj_vijesti(kategorija, spinner_callback=None):
     """
@@ -782,7 +756,7 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
             "Mađarske vijesti": "Regija",
             "Talijanske vijesti": "Regija",
             "Austrijske vijesti": "Regija",
-            "EU vijesti": "Europska unija",
+            "EU vijesti": "Europska_unija",  # FIXED: underscore
         }
         
         if kategorija in kategorija_mapping:
@@ -807,9 +781,9 @@ def generiraj_vijesti(kategorija, spinner_callback=None):
         elif kategorija == "Regija":
             vijesti = generiraj_regija_vijesti()  # Now AI-enhanced
             filename_prefix = "regija"
-        elif kategorija == "Europska unija":
+        elif kategorija == "Europska_unija":  # FIXED: underscore instead of space
             vijesti = generiraj_europska_unija_vijesti()  # NEW EU category
-            filename_prefix = "europska unija"
+            filename_prefix = "europska_unija"  # FIXED: underscore instead of space
         else:
             return f"Nepoznata kategorija: {kategorija}", None
         

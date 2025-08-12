@@ -13,9 +13,9 @@ templates = Jinja2Templates(directory="app/templates")
 async def show_news(request: Request, category: str):
     """Display news for a specific category with caching"""
     try:
-        # Handle URL-friendly EU category name
-        if category.lower() == "europska unija":
-            category = "Europska unija"
+        # Handle URL-friendly EU category name - FIXED
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
         else:
             category = category.capitalize()
         
@@ -46,7 +46,7 @@ async def show_news(request: Request, category: str):
                 last_updated = datetime.datetime.now()
                 
                 # Cache with appropriate TTL based on category
-                if category == "Europska unija":
+                if category == "Europska_unija":
                     ttl_seconds = 21600  # 6 hours for EU news
                 else:
                     ttl_seconds = 7200   # 2 hours for other categories
@@ -86,9 +86,9 @@ async def show_news(request: Request, category: str):
 async def get_news_api(category: str):
     """API endpoint for news with caching"""
     try:
-        # Handle URL-friendly EU category name
-        if category.lower() == "europska unija":
-            category = "Europska unija"
+        # Handle URL-friendly EU category name - FIXED
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
         else:
             category = category.capitalize()
         
@@ -123,7 +123,7 @@ async def get_news_api(category: str):
                 current_time = datetime.datetime.now()
                 
                 # Cache with appropriate TTL
-                if category == "Europska unija":
+                if category == "Europska_unija":
                     ttl_seconds = 21600  # 6 hours for EU news
                 else:
                     ttl_seconds = 7200   # 2 hours for other categories
@@ -154,14 +154,14 @@ async def get_news_api(category: str):
 async def refresh_news(category: str, background_tasks: BackgroundTasks):
     """Force refresh news for a category (clears cache)"""
     try:
-        # Handle URL-friendly EU category name
-        if category.lower() == "europska unija":
-            category = "Europska unija"
+        # Handle URL-friendly EU category name - FIXED
+        if category.lower() == "europska-unija":
+            category = "Europska_unija"
         else:
             category = category.capitalize()
         
-        # Updated valid categories list to include EU
-        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska unija"]
+        # Updated valid categories list to include EU - FIXED
+        valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
         if category not in valid_categories:
             raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
         
@@ -185,8 +185,8 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
 @router.get("/api/cache-status")
 async def cache_status():
     """Get cache status for all categories including EU"""
-    # Updated categories list to include EU and Technology
-    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska unija"]
+    # Updated categories list to include EU and Technology - FIXED
+    categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
     status = {}
     
     for category in categories:
@@ -198,7 +198,7 @@ async def cache_status():
             cache_age_minutes = cache_age_seconds / 60
             
             # Different cache validity periods for different categories
-            if category == "Europska unija":
+            if category == "Europska_unija":
                 cache_valid_seconds = 21600  # 6 hours for EU
             else:
                 cache_valid_seconds = 7200   # 2 hours for others
@@ -240,34 +240,34 @@ async def get_eu_sources():
     eu_sources = {
         "sources": [
             {
-                "name": "European Commission",
-                "url": "https://ec.europa.eu/commission/presscorner/rss/en",
-                "description": "Official EU policy announcements and press releases",
-                "type": "Official"
+                "name": "Euronews",
+                "url": "https://feeds.feedburner.com/euronews/en/home/",
+                "description": "European news and current affairs",
+                "type": "News"
             },
             {
-                "name": "European Parliament", 
-                "url": "https://www.europarl.europa.eu/rss/en/top-stories.xml",
-                "description": "Legislative decisions and parliamentary news",
-                "type": "Official"
-            },
-            {
-                "name": "EurActiv",
-                "url": "https://www.euractiv.com/feed/",
-                "description": "EU policy analysis and stakeholder reactions",
+                "name": "VoxEurop", 
+                "url": "https://voxeurop.eu/en/feed",
+                "description": "European news and debate website",
                 "type": "Analysis"
             },
             {
-                "name": "EUR-Lex",
-                "url": "https://eur-lex.europa.eu/rss/legal-content.xml", 
-                "description": "Legal acts and regulatory updates",
-                "type": "Legal"
+                "name": "Brussels Morning",
+                "url": "https://brusselsmorning.com/feed/",
+                "description": "Brussels-based European affairs news",
+                "type": "News"
             },
             {
-                "name": "POLITICO Europe",
-                "url": "https://www.politico.eu/rss/politics/",
-                "description": "Political context and insider analysis",
-                "type": "Political"
+                "name": "The European Files",
+                "url": "https://www.europeanfiles.eu/feed",
+                "description": "European policy analysis and insights",
+                "type": "Policy"
+            },
+            {
+                "name": "France24 Europe",
+                "url": "https://www.france24.com/en/europe/rss",
+                "description": "European news from France24",
+                "type": "News"
             }
         ],
         "total_sources": 5,
@@ -334,7 +334,7 @@ async def get_all_categories():
             "name": "Europska unija",
             "icon": "🇪🇺", 
             "description": "EU vijesti objašnjene za hrvatske građane",
-            "url": "/news/europska unija",
+            "url": "/news/europska-unija",
             "priority": "medium",
             "frequency": "3x/day"
         }
@@ -358,7 +358,7 @@ async def trigger_fresh_fetch_and_cache(category: str):
             articles = parse_news_content(result)
             
             # Cache with appropriate TTL
-            if category == "Europska unija":
+            if category == "Europska_unija":
                 ttl_seconds = 21600  # 6 hours for EU news
             else:
                 ttl_seconds = 7200   # 2 hours for other categories
