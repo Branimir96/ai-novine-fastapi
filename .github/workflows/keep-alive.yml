@@ -1,0 +1,62 @@
+name: Keep Alive - AI Novine
+on:
+  # Schedule - runs automatically
+  schedule:
+    # Cron format: minute hour day month weekday
+    # */10 = every 10 minutes
+    # 6-22 = from 6 AM to 10 PM UTC (8 AM to midnight Croatian time)
+    - cron: '*/10 6-22 * * *'
+  
+  # Manual trigger - allows you to run it manually for testing
+  workflow_dispatch:
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get Croatian time
+        id: time
+        run: |
+          echo "croatian_time=$(TZ=Europe/Zagreb date +'%Y-%m-%d %H:%M:%S %Z')" >> $GITHUB_OUTPUT
+          echo "utc_time=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_OUTPUT
+      
+      - name: Ping AI Novine server
+        run: |
+          echo "🕐 Current time (Croatian): ${{ steps.time.outputs.croatian_time }}"
+          echo "🌍 Current time (UTC): ${{ steps.time.outputs.utc_time }}"
+          echo "📡 Pinging server to prevent sleep..."
+          
+          # Make the HTTP request and capture response
+          response=$(curl -s -o /dev/null -w "%{http_code};%{time_total}" https://your-app-name.onrender.com/ping)
+          
+          # Parse response code and time
+          http_code=$(echo $response | cut -d';' -f1)
+          response_time=$(echo $response | cut -d';' -f2)
+          
+          echo "📊 Response code: $http_code"
+          echo "⏱️  Response time: ${response_time}s"
+          
+          # Check if successful
+          if [ $http_code -eq 200 ]; then
+            echo "✅ Server is awake and responding!"
+          elif [ $http_code -eq 0 ]; then
+            echo "❌ No response - server might be starting up"
+            exit 1
+          else
+            echo "⚠️  Unexpected response code: $http_code"
+            exit 1
+          fi
+      
+      - name: Test additional endpoints (optional)
+        run: |
+          echo "🔍 Testing additional endpoints..."
+          
+          # Test health endpoint
+          health_response=$(curl -s -o /dev/null -w "%{http_code}" https://your-app-name.onrender.com/health)
+          echo "🏥 Health endpoint: $health_response"
+          
+          # Test main page
+          main_response=$(curl -s -o /dev/null -w "%{http_code}" https://your-app-name.onrender.com/)
+          echo "🏠 Main page: $main_response"
+        continue-on-error: true  # Don't fail if these endpoints have issues
