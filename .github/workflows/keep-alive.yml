@@ -28,7 +28,7 @@ jobs:
           echo "📡 Pinging server to prevent sleep..."
           
           # Make the HTTP request and capture response
-          response=$(curl -s -o /dev/null -w "%{http_code};%{time_total}" https://your-app-name.onrender.com/ping)
+          response=$(curl -s -o /dev/null -w "%{http_code};%{time_total}" https://ai-novine-fastapi.onrender.com//ping)
           
           # Parse response code and time
           http_code=$(echo $response | cut -d';' -f1)
