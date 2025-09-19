@@ -185,3 +185,44 @@ async def health_check():
             "status": "error",
             "message": f"Health check failed: {str(e)}"
         }
+    
+@app.get("/ping")
+async def ping():
+    """Health check endpoint for keep-alive monitoring"""
+    return {
+        "status": "alive",
+        "timestamp": datetime.now().isoformat(),
+        "message": "AI Novine server is awake!",
+        "server_info": {
+            "environment": os.getenv("ENVIRONMENT", "unknown"),
+            "python_version": os.getenv("PYTHON_VERSION", "unknown"),
+            "render_service": True
+        }
+    }
+
+# Optional: Enhanced health check
+@app.get("/health")
+async def health_check():
+    """Detailed health check"""
+    try:
+        # Test your services
+        cache_status = simple_cache.get_stats() if 'simple_cache' in globals() else {"connected": False}
+        scheduler_status = scheduler_available if 'scheduler_available' in globals() else False
+        
+        return {
+            "status": "healthy",
+            "timestamp": datetime.now().isoformat(),
+            "services": {
+                "cache": cache_status.get("connected", False),
+                "scheduler": scheduler_status,
+                "ai": bool(os.getenv("ANTHROPIC_API_KEY"))
+            },
+            "uptime": "Service is running"
+        }
+    except Exception as e:
+        return {
+            "status": "degraded",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
+    
