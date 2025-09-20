@@ -40,3 +40,6 @@ certifi==2025.6.15
 charset-normalizer==3.4.2
 urllib3==2.5.0
 idna==3.10
+asyncpg==0.29.0
+sqlalchemy[asyncio]==2.0.25
+alembic==1.13.1
