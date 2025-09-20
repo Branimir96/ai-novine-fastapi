@@ -5,10 +5,11 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Index
 from sqlalchemy.sql import func
 import os
 
-# Database URL from environment
+# Database URL from environment - use psycopg2 instead of asyncpg
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    # Use psycopg2 async driver instead of asyncpg
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
 Base = declarative_base()
 
@@ -26,11 +27,13 @@ class Article(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Search index on title and content
+    # Search and performance indexes
     __table_args__ = (
-        Index('articles_search_idx', 'title', 'preview_text', 'ai_enhanced_content'),
+        Index('articles_search_title_idx', 'title'),
+        Index('articles_search_content_idx', 'preview_text'),
         Index('articles_category_idx', 'category'),
         Index('articles_created_idx', 'created_at'),
+        Index('articles_category_created_idx', 'category', 'created_at'),
     )
 
 # Database engine and session
@@ -38,7 +41,7 @@ engine = None
 async_session = None
 
 async def init_database():
-    """Initialize database connection"""
+    """Initialize database connection using psycopg2"""
     global engine, async_session
     
     if not DATABASE_URL:
@@ -46,15 +49,29 @@ async def init_database():
         return False
     
     try:
-        engine = create_async_engine(DATABASE_URL, echo=False)
-        async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+        print(f"🔗 Connecting to database with psycopg2...")
+        engine = create_async_engine(
+            DATABASE_URL, 
+            echo=False,
+            pool_size=5,
+            max_overflow=10,
+            pool_pre_ping=True
+        )
+        
+        async_session = sessionmaker(
+            engine, 
+            class_=AsyncSession, 
+            expire_on_commit=False
+        )
         
         # Create tables
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         
-        print("✅ Database initialized successfully")
+        print("✅ Database initialized successfully with psycopg2")
+        print(f"📊 Tables created: {list(Base.metadata.tables.keys())}")
         return True
+        
     except Exception as e:
         print(f"❌ Database initialization failed: {e}")
         return False
