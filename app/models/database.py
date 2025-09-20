@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy import Column, Integer, String, Text, DateTime, Index
 from sqlalchemy.sql import func
 import os
@@ -11,7 +10,8 @@ if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
     # Use psycopg2 async driver instead of asyncpg
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-Base = declarative_base()
+class Base(DeclarativeBase):
+    pass
 
 class Article(Base):
     __tablename__ = "articles"
