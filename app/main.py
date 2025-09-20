@@ -1,4 +1,4 @@
-# Fixed main.py - removed dynamic statistics that were causing zeros
+# Updated main.py with PostgreSQL database integration
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.templating import Jinja2Templates
@@ -7,7 +7,7 @@ from fastapi.responses import HTMLResponse
 import os
 import datetime
 import traceback
-from contextlib import asynccontextmanager  # Fixed import
+from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 
 # Import your existing routers
@@ -19,16 +19,31 @@ load_dotenv()
 # Global variables to track service status
 cache_available = False
 scheduler_available = False
+database_available = False
 simple_cache = None
 smart_scheduler = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Handle application startup and shutdown with better error handling"""
-    global cache_available, scheduler_available, simple_cache, smart_scheduler
+    """Handle application startup and shutdown with database support"""
+    global cache_available, scheduler_available, database_available, simple_cache, smart_scheduler
     
     # Startup
     print("🚀 Starting AI Novine FastAPI application...")
+    
+    # Initialize database FIRST
+    try:
+        from app.models.database import init_database
+        db_success = await init_database()
+        if db_success:
+            database_available = True
+            print("✅ PostgreSQL database initialized successfully")
+        else:
+            database_available = False
+            print("⚠️ Database initialization failed, continuing without DB")
+    except Exception as e:
+        database_available = False
+        print(f"⚠️ Database setup error: {e}")
     
     # Try to import and connect to cache
     try:
@@ -56,6 +71,17 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     print("🛑 Shutting down AI Novine FastAPI application...")
+    
+    # Close database connection
+    try:
+        if database_available:
+            from app.models.database import close_database
+            await close_database()
+            print("✅ Database connection closed")
+    except Exception as e:
+        print(f"⚠️ Database shutdown error: {e}")
+    
+    # Stop scheduler
     try:
         if scheduler_available and smart_scheduler:
             smart_scheduler.stop_scheduler()
@@ -63,6 +89,7 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         print(f"⚠️ Scheduler shutdown error: {e}")
     
+    # Disconnect cache
     try:
         if cache_available and simple_cache:
             await simple_cache.disconnect()
@@ -73,8 +100,8 @@ async def lifespan(app: FastAPI):
 # Create FastAPI app
 app = FastAPI(
     title="AI Novine",
-    description="Croatian News Portal with Smart Scheduling, Redis Caching & Technology News",
-    version="2.5.3",
+    description="Croatian News Portal with Smart Scheduling, PostgreSQL Database & Technology News",
+    version="2.6.0",
     lifespan=lifespan
 )
 
@@ -90,7 +117,7 @@ app.include_router(admin.router)
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Home page with simplified template data - no dynamic statistics"""
+    """Home page with database integration"""
     
     print("\n🏠 Home route called...")
     
@@ -108,7 +135,18 @@ async def home(request: Request):
         day_name = day_names.get(now.strftime("%A"), now.strftime("%A"))
         current_date = f"{day_name}, {now.strftime('%d.%m.%Y')}"
         
-        # Safe cache article counting for category status only
+        # Get database statistics if available
+        database_stats = {}
+        if database_available:
+            try:
+                from app.services.database_service import db_service
+                database_stats = await db_service.get_database_stats()
+                print(f"📊 Database stats: {database_stats}")
+            except Exception as e:
+                print(f"⚠️ Failed to get database stats: {e}")
+                database_stats = {"total_articles": 0, "categories": {}, "database_connected": False}
+        
+        # Safe cache article counting for category status
         categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"]
         category_cache_status = {}
         
@@ -127,19 +165,24 @@ async def home(request: Request):
                 print(f"Warning: Could not get cache for {category}: {e}")
                 category_cache_status[category] = {"has_cache": False, "count": 0}
         
-        # MINIMAL template data - no dynamic statistics that could show zeros
+        # Template data with database info
         template_data = {
             "request": request,
             "title": "AI Novine - Početna stranica",
             "current_date": current_date,
             "current_time": current_time,
             
-            # Only category cache status - no main statistics
+            # Category cache status
             "category_cache_status": category_cache_status,
             
-            # Service status (not displayed in template)
+            # Database statistics
+            "database_stats": database_stats,
+            "total_database_articles": database_stats.get("total_articles", 0),
+            
+            # Service status
             "cache_available": cache_available,
             "scheduler_available": scheduler_available,
+            "database_available": database_available,
             "ai_enabled": bool(os.getenv("ANTHROPIC_API_KEY")),
             "last_updated": now.isoformat()
         }
@@ -158,8 +201,11 @@ async def home(request: Request):
             "current_date": datetime.datetime.now().strftime('%d.%m.%Y'),
             "current_time": datetime.datetime.now().strftime('%H:%M'),
             "category_cache_status": {cat: {"has_cache": False, "count": 0} for cat in ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"]},
+            "database_stats": {"total_articles": 0, "categories": {}, "database_connected": False},
+            "total_database_articles": 0,
             "cache_available": False,
             "scheduler_available": False,
+            "database_available": False,
             "ai_enabled": bool(os.getenv("ANTHROPIC_API_KEY")),
             "last_updated": datetime.datetime.now().isoformat(),
             "error_mode": True
@@ -167,15 +213,43 @@ async def home(request: Request):
 
 @app.get("/health")
 async def health_check():
-    """Health check with service status"""
+    """Detailed health check with database status"""
     try:
+        # Test database if available
+        database_status = "unavailable"
+        database_articles = 0
+        
+        if database_available:
+            try:
+                from app.services.database_service import db_service
+                db_stats = await db_service.get_database_stats()
+                database_status = "connected" if db_stats.get("database_connected") else "error"
+                database_articles = db_stats.get("total_articles", 0)
+            except Exception as e:
+                database_status = f"error: {str(e)}"
+        
+        # Test cache
+        cache_status = "unavailable"
+        if cache_available and simple_cache:
+            try:
+                cache_stats = simple_cache.get_stats()
+                cache_status = "connected" if cache_stats.get("connected") else "disconnected"
+            except Exception as e:
+                cache_status = f"error: {str(e)}"
+        
         return {
             "status": "healthy",
             "message": "AI Novine is running",
+            "timestamp": datetime.datetime.now().isoformat(),
             "services": {
-                "cache": "available" if cache_available else "unavailable",
+                "database": database_status,
+                "cache": cache_status,
                 "scheduler": "available" if scheduler_available else "unavailable",
                 "ai": "enabled" if os.getenv("ANTHROPIC_API_KEY") else "disabled"
+            },
+            "statistics": {
+                "database_articles": database_articles,
+                "categories_supported": 6
             },
             "categories": ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija"]
         }
@@ -183,46 +257,46 @@ async def health_check():
     except Exception as e:
         return {
             "status": "error",
-            "message": f"Health check failed: {str(e)}"
+            "message": f"Health check failed: {str(e)}",
+            "timestamp": datetime.datetime.now().isoformat()
         }
-    
+
 @app.get("/ping")
 async def ping():
-    """Health check endpoint for keep-alive monitoring"""
+    """Simple ping endpoint for monitoring"""
     return {
         "status": "alive",
-        "timestamp": datetime.now().isoformat(),
-        "message": "AI Novine server is awake!",
-        "server_info": {
-            "environment": os.getenv("ENVIRONMENT", "unknown"),
-            "python_version": os.getenv("PYTHON_VERSION", "unknown"),
-            "render_service": True
+        "timestamp": datetime.datetime.now().isoformat(),
+        "message": "AI Novine server is running!",
+        "version": "2.6.0",
+        "services": {
+            "database": database_available,
+            "cache": cache_available,
+            "scheduler": scheduler_available
         }
     }
 
-# Optional: Enhanced health check
-@app.get("/health")
-async def health_check():
-    """Detailed health check"""
-    try:
-        # Test your services
-        cache_status = simple_cache.get_stats() if 'simple_cache' in globals() else {"connected": False}
-        scheduler_status = scheduler_available if 'scheduler_available' in globals() else False
-        
+@app.get("/api/database/status")
+async def database_status():
+    """Get detailed database status"""
+    if not database_available:
         return {
-            "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
-            "services": {
-                "cache": cache_status.get("connected", False),
-                "scheduler": scheduler_status,
-                "ai": bool(os.getenv("ANTHROPIC_API_KEY"))
-            },
-            "uptime": "Service is running"
+            "connected": False,
+            "message": "Database not initialized"
+        }
+    
+    try:
+        from app.services.database_service import db_service
+        stats = await db_service.get_database_stats()
+        return {
+            "connected": stats.get("database_connected", False),
+            "total_articles": stats.get("total_articles", 0),
+            "categories": stats.get("categories", {}),
+            "message": "Database operational"
         }
     except Exception as e:
         return {
-            "status": "degraded",
-            "timestamp": datetime.now().isoformat(),
-            "error": str(e)
+            "connected": False,
+            "error": str(e),
+            "message": "Database error"
         }
-    
