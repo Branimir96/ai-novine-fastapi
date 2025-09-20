@@ -5,11 +5,10 @@ jinja2==3.1.6
 python-multipart==0.0.6
 aiofiles==23.2.1
 
-# Database dependencies (FIXED SQLAlchemy compatibility)
-sqlalchemy[asyncio]==2.0.25
-psycopg2-binary==2.9.7
-psycopg==3.1.15
-alembic==1.13.1
+# Database dependencies (COMPATIBLE VERSIONS)
+sqlalchemy[asyncio]==2.0.23
+psycopg2-binary==2.9.9
+psycopg==3.1.13
 
 # AI and news processing
 anthropic==0.49.0
@@ -39,10 +38,10 @@ APScheduler==3.11.0
 asyncio-throttle==1.0.2
 python-dateutil==2.8.2
 
-# Utilities
+# Utilities (COMPATIBLE VERSIONS)
 packaging==24.2
-typing_extensions==4.9.0
-certifi==2025.6.15
-charset-normalizer==3.4.2
-urllib3==2.5.0
+typing_extensions==4.12.2
+certifi==2024.8.30
+charset-normalizer==3.4.0
+urllib3==2.2.3
 idna==3.10
