@@ -1,14 +1,15 @@
-﻿# Core FastAPI and web server
+﻿# If the main version still has conflicts, try this minimal approach:
+
+# Core FastAPI and web server
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 jinja2==3.1.6
 python-multipart==0.0.6
 aiofiles==23.2.1
 
-# Database dependencies (COMPATIBLE VERSIONS)
-sqlalchemy[asyncio]==2.0.23
-psycopg2-binary==2.9.9
-psycopg==3.1.13
+# Database dependencies (MINIMAL APPROACH)
+sqlalchemy[asyncio]==2.0.21
+psycopg2-binary==2.9.7
 
 # AI and news processing
 anthropic==0.49.0
@@ -17,7 +18,7 @@ langchain-core==0.3.50
 feedparser==6.0.11
 beautifulsoup4==4.13.3
 
-# Caching (simplified to avoid conflicts)
+# Caching
 fakeredis==2.30.0
 
 # HTTP and networking
@@ -34,14 +35,6 @@ orjson==3.10.18
 # Scheduling
 APScheduler==3.11.0
 
-# Stock API dependencies
+# Utilities
 asyncio-throttle==1.0.2
 python-dateutil==2.8.2
-
-# Utilities (COMPATIBLE VERSIONS)
-packaging==24.2
-typing_extensions==4.12.2
-certifi==2024.8.30
-charset-normalizer==3.4.0
-urllib3==2.2.3
-idna==3.10
