@@ -1,17 +1,24 @@
+# app/models/database.py
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, Text, DateTime, Index
 from sqlalchemy.sql import func
 import os
+import sys
+import asyncio
 
-# Database URL from environment - use psycopg2 instead of asyncpg
+# Windows async fix
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+# Database URL from environment
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
-    # Use psycopg2 async driver instead of asyncpg
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 
-class Base(DeclarativeBase):
-    pass
+Base = declarative_base()
 
 class Article(Base):
     __tablename__ = "articles"
@@ -27,7 +34,6 @@ class Article(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
-    # Search and performance indexes
     __table_args__ = (
         Index('articles_search_title_idx', 'title'),
         Index('articles_search_content_idx', 'preview_text'),
@@ -41,7 +47,7 @@ engine = None
 async_session = None
 
 async def init_database():
-    """Initialize database connection using psycopg2"""
+    """Initialize database connection"""
     global engine, async_session
     
     if not DATABASE_URL:
@@ -49,7 +55,7 @@ async def init_database():
         return False
     
     try:
-        print(f"🔗 Connecting to database with psycopg2...")
+        print(f"🔗 Connecting to database...")
         engine = create_async_engine(
             DATABASE_URL, 
             echo=False,
@@ -68,7 +74,7 @@ async def init_database():
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
         
-        print("✅ Database initialized successfully with psycopg2")
+        print("✅ Database initialized successfully")
         print(f"📊 Tables created: {list(Base.metadata.tables.keys())}")
         return True
         
@@ -87,4 +93,9 @@ async def get_db_session():
     """Get database session"""
     if async_session is None:
         raise Exception("Database not initialized")
-    return async_session()
+    
+    async with async_session() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
