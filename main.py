@@ -9,6 +9,7 @@ import datetime
 import traceback
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
+from app.routers import news, admin, auth
 
 # Import your existing routers
 from app.routers import news, admin
@@ -114,6 +115,8 @@ templates = Jinja2Templates(directory="app/templates")
 # Include routers
 app.include_router(news.router)
 app.include_router(admin.router)
+app.include_router(auth.router)
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):

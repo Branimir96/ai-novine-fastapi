@@ -1,0 +1,369 @@
+<!-- app/templates/register.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Registracija - AI Novine{% endblock %}
+
+{% block content %}
+<style>
+    .register-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: var(--space-xl);
+    }
+
+    .register-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        padding: var(--space-xl);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .register-card h2 {
+        font-family: var(--font-secondary);
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin-bottom: var(--space-lg);
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: var(--space-lg);
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: var(--space-sm);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: var(--space-md);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: var(--font-system);
+        transition: var(--transition-gentle);
+        background: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(107, 133, 163, 0.1);
+    }
+
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-md);
+        margin-top: var(--space-md);
+    }
+
+    .category-checkbox {
+        position: relative;
+    }
+
+    .category-checkbox input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+    }
+
+    .category-label {
+        display: flex;
+        align-items: center;
+        padding: var(--space-md);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: var(--transition-gentle);
+        background: white;
+        min-height: 60px;
+    }
+
+    .category-checkbox input[type="checkbox"]:checked + .category-label {
+        border-color: var(--primary-blue);
+        background: linear-gradient(135deg, rgba(107, 133, 163, 0.1), rgba(107, 133, 163, 0.05));
+    }
+
+    .category-checkbox input[type="checkbox"]:disabled + .category-label {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .category-icon {
+        font-size: 1.5rem;
+        margin-right: var(--space-sm);
+    }
+
+    .category-name {
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .category-counter {
+        text-align: center;
+        margin: var(--space-md) 0;
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .category-counter span {
+        font-weight: bold;
+        color: var(--primary-blue);
+        font-size: 1.2rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: var(--space-md);
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-gentle);
+        font-family: var(--font-system);
+        min-height: 50px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(107, 133, 163, 0.3);
+    }
+
+    .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .hint-text {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: var(--space-xs);
+    }
+
+    .login-link {
+        text-align: center;
+        margin-top: var(--space-lg);
+        color: var(--text-secondary);
+    }
+
+    .login-link a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: var(--space-md);
+        border-radius: 8px;
+        margin-bottom: var(--space-lg);
+        display: none;
+    }
+</style>
+
+<div class="register-container">
+    <div class="register-card">
+        <h2>📰 Kreiraj AI Novine Račun</h2>
+        
+        <div id="errorMessage" class="error-message"></div>
+        
+        <form id="registerForm" method="POST" action="/auth/register">
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="email">Email adresa</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="tvoj.email@example.com"
+                    required
+                >
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label class="form-label" for="password">Lozinka</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Minimalno 8 znakova"
+                    required
+                    minlength="8"
+                >
+                <div class="hint-text">Minimalno 8 znakova</div>
+            </div>
+
+            <!-- Full Name (Optional) -->
+            <div class="form-group">
+                <label class="form-label" for="full_name">Puno ime (opcionalno)</label>
+                <input 
+                    type="text" 
+                    id="full_name" 
+                    name="full_name" 
+                    class="form-input" 
+                    placeholder="Tvoje ime"
+                >
+            </div>
+
+            <!-- Category Selection -->
+            <div class="form-group">
+                <label class="form-label">Odaberi kategorije vijesti (2-5)</label>
+                <div class="hint-text">Dobit ćeš personalizirane vijesti samo iz odabranih kategorija</div>
+                
+                <div class="category-grid">
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_hrvatska" name="categories" value="Hrvatska">
+                        <label for="cat_hrvatska" class="category-label">
+                            <span class="category-icon">🇭🇷</span>
+                            <span class="category-name">Hrvatska</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_svijet" name="categories" value="Svijet">
+                        <label for="cat_svijet" class="category-label">
+                            <span class="category-icon">🌍</span>
+                            <span class="category-name">Svijet</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_ekonomija" name="categories" value="Ekonomija">
+                        <label for="cat_ekonomija" class="category-label">
+                            <span class="category-icon">💼</span>
+                            <span class="category-name">Ekonomija</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_tehnologija" name="categories" value="Tehnologija">
+                        <label for="cat_tehnologija" class="category-label">
+                            <span class="category-icon">💻</span>
+                            <span class="category-name">Tehnologija</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_sport" name="categories" value="Sport">
+                        <label for="cat_sport" class="category-label">
+                            <span class="category-icon">⚽</span>
+                            <span class="category-name">Sport</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_regija" name="categories" value="Regija">
+                        <label for="cat_regija" class="category-label">
+                            <span class="category-icon">🏛️</span>
+                            <span class="category-name">Regija</span>
+                        </label>
+                    </div>
+
+                    <div class="category-checkbox">
+                        <input type="checkbox" id="cat_eu" name="categories" value="Europska_unija">
+                        <label for="cat_eu" class="category-label">
+                            <span class="category-icon">🇪🇺</span>
+                            <span class="category-name">EU</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="category-counter">
+                    Odabrano: <span id="categoryCount">0</span> / 5
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="submit-btn" disabled>
+                Kreiraj Račun
+            </button>
+        </form>
+
+        <div class="login-link">
+            Već imaš račun? <a href="/auth/login">Prijavi se</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('registerForm');
+    const checkboxes = document.querySelectorAll('input[name="categories"]');
+    const counter = document.getElementById('categoryCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Update category counter and validation
+    function updateCategorySelection() {
+        const checked = document.querySelectorAll('input[name="categories"]:checked');
+        const count = checked.length;
+        
+        counter.textContent = count;
+        
+        // Enable/disable submit button (2-5 categories required)
+        submitBtn.disabled = count < 2 || count > 5;
+        
+        // Disable unchecked boxes if 5 are selected
+        checkboxes.forEach(cb => {
+            if (!cb.checked && count >= 5) {
+                cb.disabled = true;
+            } else {
+                cb.disabled = false;
+            }
+        });
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateCategorySelection);
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const checked = document.querySelectorAll('input[name="categories"]:checked');
+        
+        if (checked.length < 2) {
+            e.preventDefault();
+            showError('Molimo odaberi najmanje 2 kategorije');
+            return false;
+        }
+        
+        if (checked.length > 5) {
+            e.preventDefault();
+            showError('Maksimalno 5 kategorija dopušteno');
+            return false;
+        }
+        
+        submitBtn.textContent = '⏳ Stvaranje računa...';
+        submitBtn.disabled = true;
+    });
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        setTimeout(() => {
+            errorMessage.style.display = 'none';
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

@@ -3,33 +3,154 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, JSONResponse
 from app.services.news_service import generiraj_vijesti, parse_news_content
 from app.services.simple_redis_manager import simple_cache
+from app.services.auth_service import auth_service
 import datetime
 import os
+from typing import Optional
 
+# Initialize router and templates FIRST
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
+
+# Personalized news feed endpoint
+@router.get("/my-news", response_class=HTMLResponse)
+async def my_personalized_news(request: Request):
+    """Personalized news feed based on user's selected categories"""
+    
+    try:
+        # Get user from cookie
+        token = request.cookies.get("access_token")
+        
+        if not token:
+            return templates.TemplateResponse("login_required.html", {
+                "request": request,
+                "title": "Prijava potrebna - AI Novine",
+                "message": "Molimo prijavite se da biste vidjeli personalizirane vijesti"
+            })
+        
+        if token.startswith("Bearer "):
+            token = token[7:]
+        
+        payload = auth_service.decode_access_token(token)
+        if not payload:
+            return templates.TemplateResponse("login_required.html", {
+                "request": request,
+                "title": "Prijava potrebna - AI Novine",
+                "message": "Vaša sesija je istekla, molimo prijavite se ponovno"
+            })
+        
+        user_id = payload.get("user_id")
+        if not user_id:
+            return templates.TemplateResponse("login_required.html", {
+                "request": request,
+                "title": "Prijava potrebna - AI Novine"
+            })
+        
+        from app.models.database import get_db_session
+        
+        async for session in get_db_session():
+            user = await auth_service.get_user_by_id(session, user_id)
+            
+            if not user or not user.is_active:
+                return templates.TemplateResponse("login_required.html", {
+                    "request": request,
+                    "title": "Prijava potrebna - AI Novine"
+                })
+            
+            selected_categories = user.selected_categories
+            
+            if not selected_categories:
+                return templates.TemplateResponse("error.html", {
+                    "request": request,
+                    "error": "Nemate odabrane kategorije. Molimo kontaktirajte podršku."
+                })
+            
+            all_articles = []
+            category_stats = {}
+            
+            for category in selected_categories:
+                print(f"📰 Fetching news for user's category: {category}")
+                
+                cached_articles = await simple_cache.get_news(category)
+                
+                if cached_articles:
+                    articles = cached_articles
+                    print(f"✅ Using cached articles for {category}")
+                else:
+                    print(f"🔄 Fetching fresh news for {category}")
+                    result, filename = generiraj_vijesti(category)
+                    
+                    if result and not result.startswith("Trenutno nije moguće"):
+                        articles = parse_news_content(result)
+                        await simple_cache.set_news(category, articles, ttl_seconds=7200)
+                    else:
+                        articles = []
+                
+                for article in articles:
+                    article['user_category'] = category
+                
+                all_articles.extend(articles)
+                category_stats[category] = len(articles)
+            
+            import random
+            
+            articles_by_category = {}
+            for article in all_articles:
+                cat = article.get('user_category', 'Unknown')
+                if cat not in articles_by_category:
+                    articles_by_category[cat] = []
+                articles_by_category[cat].append(article)
+            
+            mixed_articles = []
+            max_per_category = 5
+            
+            for category in selected_categories:
+                if category in articles_by_category:
+                    cat_articles = articles_by_category[category][:max_per_category]
+                    mixed_articles.extend(cat_articles)
+            
+            random.shuffle(mixed_articles)
+            mixed_articles = mixed_articles[:25]
+            
+            print(f"✅ Personalized feed: {len(mixed_articles)} articles from {len(selected_categories)} categories")
+            
+            return templates.TemplateResponse("my_news.html", {
+                "request": request,
+                "title": f"Moje Vijesti - AI Novine",
+                "user": user,
+                "articles": mixed_articles,
+                "selected_categories": selected_categories,
+                "category_stats": category_stats,
+                "total_articles": len(mixed_articles)
+            })
+    
+    except Exception as e:
+        print(f"❌ Error in personalized feed: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        return templates.TemplateResponse("error.html", {
+            "request": request,
+            "error": f"Greška pri učitavanju personaliziranih vijesti: {str(e)}"
+        })
 
 @router.get("/news/{category}", response_class=HTMLResponse)
 async def show_news(request: Request, category: str):
     """Display news for a specific category with caching"""
     try:
-        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
             category = category.capitalize()
         
-        # Create display-friendly name
         display_category = category.replace('_', ' ')
         
         print(f"📰 Requesting news for: {category}")
         
-        # Step 1: Try to get from cache first
         cached_articles = await simple_cache.get_news(category)
         cache_timestamp = await simple_cache.get_timestamp(category)
         
         if cached_articles:
-            # We have cached articles - use them!
             articles = cached_articles
             cache_status = "redis_cache"
             last_updated = cache_timestamp
@@ -38,7 +159,6 @@ async def show_news(request: Request, category: str):
             print(f"✅ Using cached articles for {category} (age: {cache_age_minutes:.1f} minutes)")
             
         else:
-            # No cache - fetch fresh news
             print(f"🔄 Cache miss for {category}, fetching fresh news...")
             
             result, filename = generiraj_vijesti(category)
@@ -48,11 +168,10 @@ async def show_news(request: Request, category: str):
                 cache_status = "fresh_fetch"
                 last_updated = datetime.datetime.now()
                 
-                # Cache with appropriate TTL based on category
                 if category == "Europska_unija":
-                    ttl_seconds = 21600  # 6 hours for EU news
+                    ttl_seconds = 21600
                 else:
-                    ttl_seconds = 7200   # 2 hours for other categories
+                    ttl_seconds = 7200
                 
                 cache_success = await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
                 
@@ -69,7 +188,7 @@ async def show_news(request: Request, category: str):
         
         return templates.TemplateResponse("news.html", {
             "request": request,
-            "category": display_category,  # ✅ FIXED: Shows "Europska unija" without underscore
+            "category": display_category,
             "articles": articles,
             "title": f"AI Novine - {display_category}",
             "cache_status": cache_status,
@@ -89,7 +208,6 @@ async def show_news(request: Request, category: str):
 async def get_news_api(category: str):
     """API endpoint for news with caching"""
     try:
-        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
@@ -97,16 +215,14 @@ async def get_news_api(category: str):
         
         print(f"📡 API request for: {category}")
         
-        # Try cache first
         cached_articles = await simple_cache.get_news(category)
         cache_timestamp = await simple_cache.get_timestamp(category)
         
         if cached_articles:
-            # Return cached data
             cache_age_seconds = (datetime.datetime.now() - cache_timestamp).total_seconds() if cache_timestamp else 0
             
             return {
-                "category": category.replace('_', ' '),  # ✅ Display-friendly name in API too
+                "category": category.replace('_', ' '),
                 "articles": cached_articles,
                 "count": len(cached_articles),
                 "cache_info": {
@@ -118,23 +234,21 @@ async def get_news_api(category: str):
                 "timestamp": datetime.datetime.now().isoformat()
             }
         else:
-            # Fetch fresh data
             result, filename = generiraj_vijesti(category)
             
             if result and not result.startswith("Trenutno nije moguće"):
                 articles = parse_news_content(result)
                 current_time = datetime.datetime.now()
                 
-                # Cache with appropriate TTL
                 if category == "Europska_unija":
-                    ttl_seconds = 21600  # 6 hours for EU news
+                    ttl_seconds = 21600
                 else:
-                    ttl_seconds = 7200   # 2 hours for other categories
+                    ttl_seconds = 7200
                 
                 await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
                 
                 return {
-                    "category": category.replace('_', ' '),  # ✅ Display-friendly name in API too
+                    "category": category.replace('_', ' '),
                     "articles": articles,
                     "count": len(articles),
                     "cache_info": {
@@ -157,28 +271,24 @@ async def get_news_api(category: str):
 async def refresh_news(category: str, background_tasks: BackgroundTasks):
     """Force refresh news for a category (clears cache)"""
     try:
-        # Handle URL-friendly EU category name
         if category.lower() == "europska-unija":
             category = "Europska_unija"
         else:
             category = category.capitalize()
         
-        # Updated valid categories list to include EU
         valid_categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
         if category not in valid_categories:
             raise HTTPException(status_code=400, detail=f"Invalid category: {category}")
         
-        # Clear the cache first
         cleared = await simple_cache.clear_category(category)
         print(f"🗑️ Cleared cache for {category}: {cleared}")
         
-        # Trigger fresh fetch in background
         background_tasks.add_task(trigger_fresh_fetch_and_cache, category)
         
         return {
             "status": "success",
             "message": f"Cache cleared and fresh fetch started for {category.replace('_', ' ')}",
-            "category": category.replace('_', ' '),  # ✅ Display-friendly name
+            "category": category.replace('_', ' '),
             "cache_cleared": cleared
         }
         
@@ -188,7 +298,6 @@ async def refresh_news(category: str, background_tasks: BackgroundTasks):
 @router.get("/api/cache-status")
 async def cache_status():
     """Get cache status for all categories including EU"""
-    # Updated categories list to include EU and Technology
     categories = ["Hrvatska", "Svijet", "Ekonomija", "Tehnologija", "Sport", "Regija", "Europska_unija"]
     status = {}
     
@@ -196,20 +305,18 @@ async def cache_status():
         cached_articles = await simple_cache.get_news(category)
         cache_timestamp = await simple_cache.get_timestamp(category)
         
-        # Use display-friendly name for output
         display_name = category.replace('_', ' ')
         
         if cached_articles and cache_timestamp:
             cache_age_seconds = (datetime.datetime.now() - cache_timestamp).total_seconds()
             cache_age_minutes = cache_age_seconds / 60
             
-            # Different cache validity periods for different categories
             if category == "Europska_unija":
-                cache_valid_seconds = 21600  # 6 hours for EU
+                cache_valid_seconds = 21600
             else:
-                cache_valid_seconds = 7200   # 2 hours for others
+                cache_valid_seconds = 7200
             
-            status[display_name] = {  # ✅ Use display name as key
+            status[display_name] = {
                 "cached": True,
                 "articles_count": len(cached_articles),
                 "last_updated": cache_timestamp.isoformat(),
@@ -219,7 +326,7 @@ async def cache_status():
                 "source": "redis"
             }
         else:
-            status[display_name] = {  # ✅ Use display name as key
+            status[display_name] = {
                 "cached": False,
                 "articles_count": 0,
                 "last_updated": None,
@@ -229,7 +336,6 @@ async def cache_status():
                 "source": None
             }
     
-    # Get cache statistics
     cache_stats = simple_cache.get_stats()
     
     return {
@@ -239,42 +345,16 @@ async def cache_status():
         "timestamp": datetime.datetime.now().isoformat()
     }
 
-# EU-specific API endpoints
 @router.get("/api/eu-sources")
 async def get_eu_sources():
     """Get information about EU RSS sources"""
     eu_sources = {
         "sources": [
-            {
-                "name": "Euronews",
-                "url": "https://feeds.feedburner.com/euronews/en/home/",
-                "description": "European news and current affairs",
-                "type": "News"
-            },
-            {
-                "name": "VoxEurop", 
-                "url": "https://voxeurop.eu/en/feed",
-                "description": "European news and debate website",
-                "type": "Analysis"
-            },
-            {
-                "name": "Brussels Morning",
-                "url": "https://brusselsmorning.com/feed/",
-                "description": "Brussels-based European affairs news",
-                "type": "News"
-            },
-            {
-                "name": "The European Files",
-                "url": "https://www.europeanfiles.eu/feed",
-                "description": "European policy analysis and insights",
-                "type": "Policy"
-            },
-            {
-                "name": "France24 Europe",
-                "url": "https://www.france24.com/en/europe/rss",
-                "description": "European news from France24",
-                "type": "News"
-            }
+            {"name": "Euronews", "url": "https://feeds.feedburner.com/euronews/en/home/", "description": "European news and current affairs", "type": "News"},
+            {"name": "VoxEurop", "url": "https://voxeurop.eu/en/feed", "description": "European news and debate website", "type": "Analysis"},
+            {"name": "Brussels Morning", "url": "https://brusselsmorning.com/feed/", "description": "Brussels-based European affairs news", "type": "News"},
+            {"name": "The European Files", "url": "https://www.europeanfiles.eu/feed", "description": "European policy analysis and insights", "type": "Policy"},
+            {"name": "France24 Europe", "url": "https://www.france24.com/en/europe/rss", "description": "European news from France24", "type": "News"}
         ],
         "total_sources": 5,
         "update_frequency": "3 times daily",
@@ -288,71 +368,17 @@ async def get_eu_sources():
 async def get_all_categories():
     """Get all available news categories"""
     categories = {
-        "Hrvatska": {
-            "name": "Hrvatska",
-            "icon": "🇭🇷",
-            "description": "Najnovije vijesti iz domaćih medija",
-            "url": "/news/hrvatska",
-            "priority": "high",
-            "frequency": "6x/day"
-        },
-        "Svijet": {
-            "name": "Svijet", 
-            "icon": "🌍",
-            "description": "Međunarodne vijesti prevedene na hrvatski",
-            "url": "/news/svijet",
-            "priority": "high",
-            "frequency": "6x/day"
-        },
-        "Ekonomija": {
-            "name": "Ekonomija",
-            "icon": "💼", 
-            "description": "Poslovne i ekonomske vijesti",
-            "url": "/news/ekonomija",
-            "priority": "medium",
-            "frequency": "4x/day"
-        },
-        "Tehnologija": {
-            "name": "Tehnologija",
-            "icon": "💻",
-            "description": "Najnoviji tehnološki trendovi",
-            "url": "/news/tehnologija", 
-            "priority": "medium",
-            "frequency": "4x/day"
-        },
-        "Sport": {
-            "name": "Sport",
-            "icon": "⚽",
-            "description": "Sportske vijesti iz Hrvatske i svijeta",
-            "url": "/news/sport",
-            "priority": "medium", 
-            "frequency": "4x/day"
-        },
-        "Regija": {
-            "name": "Regija",
-            "icon": "🏛️",
-            "description": "Vijesti iz susjednih zemalja",
-            "url": "/news/regija",
-            "priority": "low",
-            "frequency": "1x/day"
-        },
-        "Europska unija": {  # ✅ Display name without underscore
-            "name": "Europska unija",
-            "icon": "🇪🇺", 
-            "description": "EU vijesti objašnjene za hrvatske građane",
-            "url": "/news/europska-unija",
-            "priority": "medium",
-            "frequency": "3x/day"
-        }
+        "Hrvatska": {"name": "Hrvatska", "icon": "🇭🇷", "description": "Najnovije vijesti iz domaćih medija", "url": "/news/hrvatska", "priority": "high", "frequency": "6x/day"},
+        "Svijet": {"name": "Svijet", "icon": "🌍", "description": "Međunarodne vijesti prevedene na hrvatski", "url": "/news/svijet", "priority": "high", "frequency": "6x/day"},
+        "Ekonomija": {"name": "Ekonomija", "icon": "💼", "description": "Poslovne i ekonomske vijesti", "url": "/news/ekonomija", "priority": "medium", "frequency": "4x/day"},
+        "Tehnologija": {"name": "Tehnologija", "icon": "💻", "description": "Najnoviji tehnološki trendovi", "url": "/news/tehnologija", "priority": "medium", "frequency": "4x/day"},
+        "Sport": {"name": "Sport", "icon": "⚽", "description": "Sportske vijesti iz Hrvatske i svijeta", "url": "/news/sport", "priority": "medium", "frequency": "4x/day"},
+        "Regija": {"name": "Regija", "icon": "🏛️", "description": "Vijesti iz susjednih zemalja", "url": "/news/regija", "priority": "low", "frequency": "1x/day"},
+        "Europska unija": {"name": "Europska unija", "icon": "🇪🇺", "description": "EU vijesti objašnjene za hrvatske građane", "url": "/news/europska-unija", "priority": "medium", "frequency": "3x/day"}
     }
     
-    return {
-        "categories": categories,
-        "total_categories": len(categories),
-        "timestamp": datetime.datetime.now().isoformat()
-    }
+    return {"categories": categories, "total_categories": len(categories), "timestamp": datetime.datetime.now().isoformat()}
 
-# Background task functions
 async def trigger_fresh_fetch_and_cache(category: str):
     """Background task to fetch fresh news and cache it"""
     try:
@@ -363,11 +389,10 @@ async def trigger_fresh_fetch_and_cache(category: str):
         if result and not result.startswith("Trenutno nije moguće"):
             articles = parse_news_content(result)
             
-            # Cache with appropriate TTL
             if category == "Europska_unija":
-                ttl_seconds = 21600  # 6 hours for EU news
+                ttl_seconds = 21600
             else:
-                ttl_seconds = 7200   # 2 hours for other categories
+                ttl_seconds = 7200
             
             cache_success = await simple_cache.set_news(category, articles, ttl_seconds=ttl_seconds)
             

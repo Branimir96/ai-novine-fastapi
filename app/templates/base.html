@@ -64,14 +64,12 @@
             min-height: 100vh;
             font-size: 16px;
             letter-spacing: 0.01em;
-            /* Better text rendering on mobile */
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Mobile-First Container */
         .container {
             max-width: 100%;
             margin: 0 auto;
@@ -79,7 +77,6 @@
             width: 100%;
         }
 
-        /* Mobile-Optimized Main Header */
         .main-header {
             background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-blue-dark) 100%);
             padding: var(--space-xl) var(--space-md);
@@ -126,7 +123,6 @@
             z-index: 1;
         }
 
-        /* Mobile-Optimized News Ticker */
         .news-ticker {
             background: linear-gradient(90deg, var(--primary-blue-light), var(--primary-blue));
             color: white;
@@ -151,7 +147,6 @@
             100% { transform: translate3d(-100%, 0, 0); }
         }
 
-        /* Mobile-First Navigation */
         .nav-bar {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
@@ -182,16 +177,14 @@
             transition: var(--transition-gentle);
             cursor: pointer;
             text-align: center;
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             width: 100%;
             position: relative;
             overflow: hidden;
             letter-spacing: 0.01em;
-            /* Better touch targets */
             min-height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
 
         .nav-button::before {
@@ -229,7 +222,6 @@
             display: none;
         }
 
-        /* Mobile-Optimized Article Cards */
         .article-card {
             background: rgba(255, 255, 255, 0.95);
             padding: var(--space-lg);
@@ -295,16 +287,14 @@
             text-decoration: none;
             font-weight: 500;
             font-family: var(--font-system);
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             transition: var(--transition-gentle);
             border: none;
             font-size: 0.9rem;
             cursor: pointer;
-            /* Better touch target */
             min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
         }
         
         .read-more-btn:active {
@@ -315,7 +305,6 @@
             text-decoration: none;
         }
 
-        /* Mobile-Optimized Footer */
         .footer {
             background: linear-gradient(135deg, var(--secondary-gray), var(--text-secondary));
             color: white;
@@ -355,7 +344,6 @@
             z-index: 1;
         }
 
-        /* Tablet Responsive Design */
         @media (min-width: 768px) {
             :root {
                 --space-xs: 0.5rem;
@@ -398,7 +386,6 @@
             }
         }
 
-        /* Desktop Responsive Design */
         @media (min-width: 1025px) {
             :root {
                 --space-xs: 0.5rem;
@@ -448,9 +435,7 @@
             }
         }
 
-        /* Touch and Accessibility Improvements */
         @media (hover: none) and (pointer: coarse) {
-            /* Touch devices */
             .nav-button:hover {
                 transform: none;
                 box-shadow: none;
@@ -467,7 +452,6 @@
             }
         }
 
-        /* Accessibility and Motion */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
                 animation-duration: 0.01ms !important;
@@ -481,14 +465,12 @@
             }
         }
 
-        /* Focus States for Accessibility */
         .nav-button:focus,
         .read-more-btn:focus {
             outline: 2px solid var(--primary-blue);
             outline-offset: 2px;
         }
 
-        /* Enhanced Mobile Scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -502,7 +484,6 @@
             border-radius: 2px;
         }
 
-        /* iOS Safari specific fixes */
         @supports (-webkit-touch-callout: none) {
             body {
                 -webkit-overflow-scrolling: touch;
@@ -514,7 +495,6 @@
             }
         }
 
-        /* High DPI Optimization */
         @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
             .main-header, .nav-bar, .article-card, .footer {
                 -webkit-font-smoothing: antialiased;
@@ -522,7 +502,6 @@
             }
         }
 
-        /* Safe Area Support for newer iPhones */
         @supports (padding: max(0px)) {
             .container {
                 padding-left: max(var(--space-md), env(safe-area-inset-left));
@@ -533,64 +512,72 @@
                 padding-bottom: max(var(--space-xl), env(safe-area-inset-bottom));
             }
         }
-
-       
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Mobile-Optimized Main Header -->
         <div class="main-header">
             <h1>📰 AI Novine</h1>
             <p>Vaš pametni portal za najnovije vijesti iz Hrvatske i svijeta</p>
         </div>
 
-        <!-- Mobile-Optimized News Ticker -->
         <div class="news-ticker">
             <div class="news-ticker-content">
                 🔴 UŽIVO: Najnovije vijesti stižu svakih 2 sata • 🤖 AI tehnologija prevodi vijesti na hrvatski jezik • 🌍 Pokrivamo vijesti iz preko 25 međunarodnih izvora • 📱 Optimizirano za sve uređaje • ⚡ Automatsko osvježavanje • 🎯 Pametno rangiranje vijesti • 💻 Tehnologija - najnoviji tech trendovi
             </div>
         </div>
 
-        <!-- Mobile-First Navigation -->
+        <!-- UPDATED NAVIGATION WITH AUTH -->
         <div class="nav-bar">
             <div class="nav-buttons">
-                <a href="/news/hrvatska" class="nav-button {% if category == 'Hrvatska' %}active{% endif %}">🇭🇷 Hrvatska</a>
-                <a href="/news/svijet" class="nav-button {% if category == 'Svijet' %}active{% endif %}">🌍 Svijet</a>
-                <a href="/news/ekonomija" class="nav-button {% if category == 'Ekonomija' %}active{% endif %}">💼 Ekonomija</a>
-                <a href="/news/tehnologija" class="nav-button {% if category == 'Tehnologija' %}active{% endif %}">💻 Tehnologija</a>
-                <a href="/news/sport" class="nav-button {% if category == 'Sport' %}active{% endif %}">⚽ Sport</a>
-                <a href="/news/regija" class="nav-button {% if category == 'Regija' %}active{% endif %}">🏛️ Regija</a>
-                <a href="/news/europska-unija" class="nav-button {% if category == 'Europska unija' %}active{% endif %}">🇪🇺 EU</a>
-            </div>
-        </div>
+                {% if request.cookies.get('access_token') %}
+                    <!-- Logged in user navigation -->
+                    <a href="/my-news" class="nav-button" style="background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark)); color: white; border-color: var(--primary-blue);">
+                        ⭐ Moje Vijesti
+                    </a>
+                    <a href="/news/hrvatska" class="nav-button {% if category == 'Hrvatska' %}active{% endif %}">🇭🇷 Hrvatska</a>
+                    <a href="/news/svijet" class="nav-button {% if category == 'Svijet' %}active{% endif %}">🌍 Svijet</a>
+                    <a href="/news/ekonomija" class="nav-button {% if category == 'Ekonomija' %}active{% endif %}">💼 Ekonomija</a>
+                    <a href="/news/tehnologija" class="nav-button {% if category == 'Tehnologija' %}active{% endif %}">💻 Tehnologija</a>
+                    <a href="/news/sport" class="nav-button {% if category == 'Sport' %}active{% endif %}">⚽ Sport</a>
+                    <a href="/news/regija" class="nav-button {% if category == 'Regija' %}active{% endif %}">🏛️ Regija</a>
+                    <a href="/news/europska-unija" class="nav-button {% if category == 'Europska unija' %}active{% endif %}">🇪🇺 EU</a>
+                    
+                    <form action="/auth/logout" method="POST" style="display: contents;">
+                        <button type="submit" class="nav-button" style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; border: 2px solid #dc3545;">
+                            🚪 Odjava
+                        </button>
+                    </form>
+                {% else %}
+                    <!-- Guest navigation -->
+                    <a href="/" class="nav-button">🏠 Početna</a>
+                    <a href="/auth/login" class="nav-button" style="background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark)); color: white; border-color: var(--primary-blue);">
+                        🔐 Prijava
+                    </a>
+                    <a href="/auth/register" class="nav-button" style="background: linear-gradient(135deg, var(--success-soft), #66BB6A); color: white; border-color: var(--success-soft);">
+                        ✨ Registracija
+                    </a>
+                {% endif %}
             </div>
         </div>
 
-        <!-- Main Content -->
         <main>
             {% block content %}{% endblock %}
         </main>
     </div>
 
-    <!-- Mobile-Optimized Footer -->
     <div class="footer">
         <h4>📰 AI Novine</h4>
         <p>Vaš pametni portal za najnovije vijesti • Powered by FastAPI • Made with ❤️</p>
     </div>
 
     <script>
-        // Mobile-optimized interactions
         document.addEventListener('DOMContentLoaded', function() {
-            // Smooth scroll behavior
             document.documentElement.style.scrollBehavior = 'smooth';
             
-            // Enhanced touch interactions for mobile
             document.querySelectorAll('.nav-button').forEach(button => {
-                // Handle both click and touch
                 button.addEventListener('click', function(e) {
-                    if (!this.classList.contains('active')) {
-                        // Visual feedback for mobile
+                    if (!this.classList.contains('active') && this.tagName !== 'BUTTON') {
                         this.style.transform = 'translateY(1px)';
                         this.style.opacity = '0.8';
                         
@@ -601,19 +588,19 @@
                     }
                 });
                 
-                // Touch feedback
                 button.addEventListener('touchstart', function() {
                     this.style.background = 'var(--hover-bg)';
                 });
                 
                 button.addEventListener('touchend', function() {
                     setTimeout(() => {
-                        this.style.background = '';
+                        if (!this.style.background.includes('gradient')) {
+                            this.style.background = '';
+                        }
                     }, 150);
                 });
             });
 
-            // Optimized hover effects for desktop only
             if (window.matchMedia('(hover: hover)').matches) {
                 document.querySelectorAll('.article-card').forEach(card => {
                     card.addEventListener('mouseenter', function() {
@@ -626,12 +613,10 @@
                 });
             }
 
-            // Prevent zoom on iOS when focusing inputs
             if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
                 document.addEventListener('touchstart', function() {}, true);
             }
 
-            // Handle orientation changes on mobile
             window.addEventListener('orientationchange', function() {
                 setTimeout(function() {
                     window.scrollTo(0, 0);
@@ -639,7 +624,6 @@
             });
         });
 
-        // Respect user's motion preferences
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             document.querySelectorAll('*').forEach(element => {
                 element.style.animationDuration = '0.01ms';
@@ -647,12 +631,10 @@
             });
         }
 
-        // Performance optimization for mobile
         let resizeTimer;
         window.addEventListener('resize', function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
-                // Trigger any necessary recalculations after resize
                 window.dispatchEvent(new Event('optimizedResize'));
             }, 250);
         });

@@ -4,7 +4,6 @@
 
 {% block content %}
 <style>
-    /* Serene Home Page Styling */
     .category-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -105,7 +104,6 @@
         left: 100%;
     }
 
-    /* Category-specific gentle colors */
     .hrvatska-card::before { background: linear-gradient(135deg, #E57373, #EF5350); }
     .hrvatska-card h3 { color: #C62828; }
     .hrvatska-card .category-link { border-color: #E57373; }
@@ -136,7 +134,11 @@
     .regija-card .category-link { border-color: var(--warning-soft); }
     .regija-card .category-link:hover { border-color: #EF6C00; color: #EF6C00; }
 
-    /* Statistics Section - Completely Hardcoded */
+    .eu-card::before { background: linear-gradient(135deg, #5C6BC0, #3F51B5); }
+    .eu-card h3 { color: #283593; }
+    .eu-card .category-link { border-color: #5C6BC0; }
+    .eu-card .category-link:hover { border-color: #283593; color: #283593; }
+
     .stats-section {
         background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue));
         color: white;
@@ -206,7 +208,6 @@
         margin-top: 0.2rem;
     }
 
-    /* Status indicators */
     .status-indicator {
         display: inline-block;
         width: 8px;
@@ -217,7 +218,6 @@
 
     .status-online { background: #4CAF50; }
 
-    /* Responsive Design */
     @media (max-width: 768px) {
         .category-grid {
             grid-template-columns: 1fr;
@@ -235,121 +235,146 @@
     }
 </style>
 
-<!-- Category Descriptions with Dynamic Cache Status -->
+<!-- USER WELCOME / GUEST CTA -->
+{% if request.cookies.get('access_token') %}
+    <!-- Logged-in user welcome -->
+    <div style="background: linear-gradient(135deg, var(--success-soft), #66BB6A); color: white; padding: var(--space-xl); border-radius: 16px; text-align: center; margin-bottom: var(--space-xl); box-shadow: 0 4px 16px rgba(102, 187, 106, 0.3);">
+        <h2 style="margin: 0 0 var(--space-sm) 0; font-size: 1.8rem;">Dobrodošao natrag!</h2>
+        <p style="margin: 0 0 var(--space-md) 0; font-size: 1.1rem; opacity: 0.95;">Tvoje personalizirane vijesti te čekaju</p>
+        <a href="/my-news" style="background: white; color: #2E7D32; padding: var(--space-md) var(--space-xl); border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block; transition: var(--transition-gentle);">
+            Vidi Moje Vijesti
+        </a>
+    </div>
+{% else %}
+    <!-- Guest call-to-action -->
+    <div style="background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark)); color: white; padding: var(--space-xl); border-radius: 16px; text-align: center; margin-bottom: var(--space-xl); box-shadow: 0 4px 16px rgba(107, 133, 163, 0.3);">
+        <h2 style="margin: 0 0 var(--space-sm) 0; font-size: 1.8rem;">Personaliziraj Svoje Vijesti!</h2>
+        <p style="margin: 0 0 var(--space-md) 0; font-size: 1.1rem; opacity: 0.95;">Registriraj se besplatno i odaberi svoje omiljene kategorije</p>
+        <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+            <a href="/auth/register" style="background: white; color: var(--primary-blue-dark); padding: var(--space-md) var(--space-xl); border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block;">
+                Registriraj se
+            </a>
+            <a href="/auth/login" style="background: rgba(255,255,255,0.2); color: white; padding: var(--space-md) var(--space-xl); border-radius: 12px; text-decoration: none; font-weight: 600; display: inline-block; border: 2px solid white;">
+                Prijavi se
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Category Cards -->
 <div class="category-grid">
     <div class="category-card hrvatska-card">
-        <h3>🇭🇷 Hrvatska</h3>
+        <h3>Hrvatska</h3>
         <p>Najnovije vijesti iz domaćih medija - HRT, Index, tportal, 24sata, Večernji list</p>
         {% if category_cache_status and category_cache_status.Hrvatska and category_cache_status.Hrvatska.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Hrvatska.count }} članaka u cache
+            {{ category_cache_status.Hrvatska.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/hrvatska" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/hrvatska" class="category-link">Čitaj vijesti</a>
     </div>
     
     <div class="category-card svijet-card">
-        <h3>🌍 Svijet</h3>
+        <h3>Svijet</h3>
         <p>Međunarodne vijesti prevedene na hrvatski - NYT, BBC, Guardian, Al Jazeera</p>
         {% if category_cache_status and category_cache_status.Svijet and category_cache_status.Svijet.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Svijet.count }} članaka u cache
+            {{ category_cache_status.Svijet.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/svijet" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/svijet" class="category-link">Čitaj vijesti</a>
     </div>
     
     <div class="category-card ekonomija-card">
-        <h3>💼 Ekonomija</h3>
+        <h3>Ekonomija</h3>
         <p>Poslovne i ekonomske vijesti - NYT Business, BBC Business, CNBC, Financial Times</p>
         {% if category_cache_status and category_cache_status.Ekonomija and category_cache_status.Ekonomija.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Ekonomija.count }} članaka u cache
+            {{ category_cache_status.Ekonomija.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/ekonomija" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/ekonomija" class="category-link">Čitaj vijesti</a>
     </div>
     
     <div class="category-card tehnologija-card">
-        <h3>💻 Tehnologija</h3>
+        <h3>Tehnologija</h3>
         <p>Najnoviji tehnološki trendovi - TechCrunch, Wired, Ars Technica, NYT Technology</p>
         {% if category_cache_status and category_cache_status.Tehnologija and category_cache_status.Tehnologija.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Tehnologija.count }} članaka u cache
+            {{ category_cache_status.Tehnologija.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/tehnologija" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/tehnologija" class="category-link">Čitaj vijesti</a>
     </div>
     
     <div class="category-card sport-card">
-        <h3>⚽ Sport</h3>
+        <h3>Sport</h3>
         <p>Kombinacija hrvatskih i svjetskih sportskih vijesti</p>
         {% if category_cache_status and category_cache_status.Sport and category_cache_status.Sport.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Sport.count }} članaka u cache
+            {{ category_cache_status.Sport.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/sport" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/sport" class="category-link">Čitaj vijesti</a>
     </div>
     
     <div class="category-card regija-card">
-        <h3>🏛️ Regija</h3>
+        <h3>Regija</h3>
         <p>Najvažnije vijesti iz Slovenije, Mađarske, Italije i Austrije</p>
         {% if category_cache_status and category_cache_status.Regija and category_cache_status.Regija.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Regija.count }} članaka u cache
+            {{ category_cache_status.Regija.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/regija" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/regija" class="category-link">Čitaj vijesti</a>
     </div>
-     <!-- NEW EU Category Card -->
-     <div class="category-card eu-card">
-        <h3>🇪🇺 Europska unija</h3>
+
+    <div class="category-card eu-card">
+        <h3>Europska unija</h3>
         <p>EU vijesti objašnjene za hrvatske građane - propisi, fondovi, politika</p>
         {% if category_cache_status and category_cache_status.Europska_unija and category_cache_status.Europska_unija.has_cache %}
         <div class="category-status">
-            ✅ {{ category_cache_status.Europska_unija.count }} članaka u cache
+            {{ category_cache_status.Europska_unija.count }} članaka u cache
         </div>
         {% else %}
         <div class="category-status">
-            ⏳ Priprema se sadržaj...
+            Priprema se sadržaj...
         </div>
         {% endif %}
-        <a href="/news/europska-unija" class="category-link">📖 Čitaj vijesti</a>
+        <a href="/news/europska-unija" class="category-link">Čitaj vijesti</a>
     </div>
 </div>
-</div>
 
-<!-- HARDCODED Portal Statistics - NO TEMPLATE VARIABLES -->
+<!-- Portal Statistics -->
 <div class="stats-section">
-    <h3>📊 Portal Statistike</h3>
+    <h3>Portal Statistike</h3>
     <div class="stats-grid">
         <div class="stat-item">
-            <div class="stat-number" data-target="6">6</div>
+            <div class="stat-number" data-target="7">7</div>
             <div class="stat-label">Kategorija vijesti</div>
         </div>
         <div class="stat-item">
@@ -365,7 +390,7 @@
             </div>
         </div>
         <div class="stat-item">
-            <div class="stat-number">🤖</div>
+            <div class="stat-number">AI</div>
             <div class="stat-label">AI prijevod i poboljšanje</div>
             <div class="stat-sublabel">
                 <span class="status-indicator status-online"></span>Omogućen
@@ -376,7 +401,6 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Gentle animations for category cards
     const cards = document.querySelectorAll('.category-card');
     cards.forEach((card, index) => {
         card.style.opacity = '0';
@@ -389,7 +413,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }, index * 100);
     });
 
-    // Hardcoded number animations - will always show correct values
     const statNumbers = document.querySelectorAll('.stat-number');
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -402,13 +425,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     const finalValue = parseInt(target);
                     const increment = finalValue / 30;
                     
-                    // Set to 0 first for animation
                     number.textContent = '0';
                     
                     const timer = setInterval(() => {
                         currentValue += increment;
                         if (currentValue >= finalValue) {
-                            // Ensure we show the final correct value
                             if (finalValue === 54) {
                                 number.textContent = '54+';
                             } else {
@@ -424,23 +445,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }, { threshold: 0.5 });
 
-    // Only animate numbers with data-target attribute
     statNumbers.forEach(number => {
         if (number.getAttribute('data-target')) {
             observer.observe(number);
         }
     });
 
-    // Gentle loading states for category links
     document.querySelectorAll('.category-link').forEach(link => {
         link.addEventListener('click', function(e) {
             this.style.opacity = '0.8';
-            this.innerHTML = '⏳ Učitavam...';
+            this.innerHTML = 'Učitavam...';
             
-            // Restore if navigation fails
             setTimeout(() => {
-                if (this.innerHTML === '⏳ Učitavam...') {
-                    this.innerHTML = '📖 Čitaj vijesti';
+                if (this.innerHTML === 'Učitavam...') {
+                    this.innerHTML = 'Čitaj vijesti';
                     this.style.opacity = '1';
                 }
             }, 3000);

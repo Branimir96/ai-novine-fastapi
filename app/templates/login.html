@@ -1,0 +1,163 @@
+<!-- app/templates/login.html -->
+
+{% extends "base.html" %}
+
+{% block title %}Prijava - AI Novine{% endblock %}
+
+{% block content %}
+<style>
+    .login-container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: var(--space-xl);
+    }
+
+    .login-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        padding: var(--space-xl);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .login-card h2 {
+        font-family: var(--font-secondary);
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin-bottom: var(--space-lg);
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: var(--space-lg);
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: var(--space-sm);
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: var(--space-md);
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        font-size: 1rem;
+        font-family: var(--font-system);
+        transition: var(--transition-gentle);
+        background: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(107, 133, 163, 0.1);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: var(--space-md);
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition-gentle);
+        font-family: var(--font-system);
+        min-height: 50px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(107, 133, 163, 0.3);
+    }
+
+    .register-link {
+        text-align: center;
+        margin-top: var(--space-lg);
+        color: var(--text-secondary);
+    }
+
+    .register-link a {
+        color: var(--primary-blue);
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+
+    .error-message {
+        background: #f8d7da;
+        color: #721c24;
+        padding: var(--space-md);
+        border-radius: 8px;
+        margin-bottom: var(--space-lg);
+        display: none;
+    }
+</style>
+
+<div class="login-container">
+    <div class="login-card">
+        <h2>🔐 Prijavi se</h2>
+        
+        <div id="errorMessage" class="error-message"></div>
+        
+        <form id="loginForm" method="POST" action="/auth/login">
+            <!-- Email -->
+            <div class="form-group">
+                <label class="form-label" for="email">Email adresa</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-input" 
+                    placeholder="tvoj.email@example.com"
+                    required
+                >
+            </div>
+
+            <!-- Password -->
+            <div class="form-group">
+                <label class="form-label" for="password">Lozinka</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Tvoja lozinka"
+                    required
+                >
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" id="submitBtn" class="submit-btn">
+                Prijavi se
+            </button>
+        </form>
+
+        <div class="register-link">
+            Nemaš račun? <a href="/auth/register">Registriraj se</a>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', function(e) {
+        submitBtn.textContent = '⏳ Prijava...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

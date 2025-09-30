@@ -1,0 +1,162 @@
+<!-- app/templates/login_required.html -->
+
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+    .login-required-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: var(--space-xl);
+        text-align: center;
+    }
+
+    .login-required-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        padding: var(--space-2xl);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    .lock-icon {
+        font-size: 4rem;
+        margin-bottom: var(--space-lg);
+    }
+
+    .login-required-card h2 {
+        font-family: var(--font-secondary);
+        font-size: 2rem;
+        color: var(--text-primary);
+        margin-bottom: var(--space-md);
+    }
+
+    .login-required-card p {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: var(--space-xl);
+        line-height: 1.6;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--space-md);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .primary-btn {
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-dark));
+        color: white;
+        padding: var(--space-md) var(--space-xl);
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: var(--transition-gentle);
+        border: none;
+        min-width: 150px;
+    }
+
+    .primary-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(107, 133, 163, 0.3);
+        text-decoration: none;
+        color: white;
+    }
+
+    .secondary-btn {
+        background: white;
+        color: var(--primary-blue);
+        padding: var(--space-md) var(--space-xl);
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: var(--transition-gentle);
+        border: 2px solid var(--primary-blue);
+        min-width: 150px;
+    }
+
+    .secondary-btn:hover {
+        background: var(--hover-bg);
+        transform: translateY(-2px);
+        text-decoration: none;
+        color: var(--primary-blue);
+    }
+
+    .benefits-list {
+        text-align: left;
+        margin: var(--space-xl) 0;
+        background: var(--hover-bg);
+        padding: var(--space-lg);
+        border-radius: 12px;
+    }
+
+    .benefits-list h3 {
+        color: var(--text-primary);
+        margin-bottom: var(--space-md);
+        font-size: 1.2rem;
+    }
+
+    .benefits-list ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .benefits-list li {
+        padding: var(--space-sm) 0;
+        color: var(--text-secondary);
+        font-size: 1rem;
+    }
+
+    .benefits-list li::before {
+        content: "✓";
+        color: var(--success-soft);
+        font-weight: bold;
+        margin-right: var(--space-sm);
+        font-size: 1.2rem;
+    }
+</style>
+
+<div class="login-required-container">
+    <div class="login-required-card">
+        <div class="lock-icon">🔒</div>
+        
+        <h2>Prijava Potrebna</h2>
+        
+        <p>
+            {{ message or "Molimo prijavite se da biste pristupili personaliziranim vijestima" }}
+        </p>
+
+        <div class="benefits-list">
+            <h3>🎯 Zašto se registrirati?</h3>
+            <ul>
+                <li>Personalizirane vijesti iz tvojih omiljenih kategorija</li>
+                <li>AI-poboljšani sažeci svih članaka</li>
+                <li>Automatsko ažuriranje 25 puta dnevno</li>
+                <li>Pristup vijestima iz 7 različitih kategorija</li>
+                <li>Potpuno besplatno, bez reklama</li>
+            </ul>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/auth/login" class="primary-btn">
+                🔐 Prijavi se
+            </a>
+            <a href="/auth/register" class="secondary-btn">
+                ✨ Registriraj se
+            </a>
+        </div>
+
+        <div style="margin-top: var(--space-xl);">
+            <a href="/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem;">
+                ← Nazad na početnu
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
