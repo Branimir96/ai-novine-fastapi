@@ -13,6 +13,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 
 # Personalized news feed endpoint
+# Only the section of news.py that needs to be changed
+# Replace the my_personalized_news function with this fixed version:
+
 @router.get("/my-news", response_class=HTMLResponse)
 async def my_personalized_news(request: Request):
     """Personalized news feed based on user's selected categories"""
@@ -48,7 +51,8 @@ async def my_personalized_news(request: Request):
         
         from app.models.database import get_db_session
         
-        async for session in get_db_session():
+        # FIXED: Use async with instead of async for
+        async with get_db_session() as session:
             user = await auth_service.get_user_by_id(session, user_id)
             
             if not user or not user.is_active:

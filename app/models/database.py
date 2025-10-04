@@ -1,10 +1,10 @@
 # app/models/database.py
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy import Column, Integer, String, Text, DateTime, Index
 from sqlalchemy.sql import func
+from contextlib import asynccontextmanager
 import os
 import sys
 import asyncio
@@ -44,11 +44,11 @@ class Article(Base):
 
 # Database engine and session
 engine = None
-async_session = None
+async_session_maker = None
 
 async def init_database():
     """Initialize database connection"""
-    global engine, async_session
+    global engine, async_session_maker
     
     if not DATABASE_URL:
         print("⚠️ DATABASE_URL not found, skipping database initialization")
@@ -64,7 +64,8 @@ async def init_database():
             pool_pre_ping=True
         )
         
-        async_session = sessionmaker(
+        # FIXED: Use async_sessionmaker instead of sessionmaker
+        async_session_maker = async_sessionmaker(
             engine, 
             class_=AsyncSession, 
             expire_on_commit=False
@@ -89,13 +90,19 @@ async def close_database():
         await engine.dispose()
         print("✅ Database connection closed")
 
+# FIXED: Proper async context manager
+@asynccontextmanager
 async def get_db_session():
-    """Get database session"""
-    if async_session is None:
+    """Get database session - FIXED async context manager"""
+    if async_session_maker is None:
         raise Exception("Database not initialized")
     
-    async with async_session() as session:
-        try:
-            yield session
-        finally:
-            await session.close()
+    session = async_session_maker()
+    try:
+        yield session
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close()

@@ -93,9 +93,9 @@ async def register_user(
     if invalid_cats:
         raise HTTPException(status_code=400, detail=f"Invalid categories: {invalid_cats}")
     
-    # Create user
-    async for session in get_db_session():
-        try:
+    # Create user - FIXED: Use async with properly
+    try:
+        async with get_db_session() as session:
             user = await auth_service.create_user(
                 session=session,
                 email=email,
@@ -122,11 +122,11 @@ async def register_user(
             
             return response
             
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"Registration error: {e}")
-            raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Registration error: {e}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
 
 @router.post("/login")
 async def login_user(
@@ -138,8 +138,9 @@ async def login_user(
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
     
-    async for session in get_db_session():
-        try:
+    # FIXED: Use async with properly
+    try:
+        async with get_db_session() as session:
             # Authenticate user
             user = await auth_service.authenticate_user(
                 session=session,
@@ -168,11 +169,11 @@ async def login_user(
             
             return response
             
-        except HTTPException:
-            raise
-        except Exception as e:
-            print(f"Login error: {e}")
-            raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Login error: {e}")
+        raise HTTPException(status_code=500, detail=f"Login failed: {str(e)}")
 
 @router.post("/logout")
 async def logout_user():
@@ -203,8 +204,8 @@ async def get_current_user(request: Request):
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token")
     
-    # Get user from database
-    async for session in get_db_session():
+    # Get user from database - FIXED: Use async with properly
+    async with get_db_session() as session:
         user = await auth_service.get_user_by_id(session, user_id)
         
         if not user:
@@ -241,6 +242,7 @@ async def get_current_user_from_cookie(request: Request):
     if not user_id:
         return None
     
-    async for session in get_db_session():
+    # FIXED: Use async with properly
+    async with get_db_session() as session:
         user = await auth_service.get_user_by_id(session, user_id)
         return user

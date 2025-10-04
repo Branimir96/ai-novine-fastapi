@@ -10,6 +10,7 @@ class DatabaseService:
     async def save_article(self, article_data: dict) -> bool:
         """Save article to database"""
         try:
+            # FIXED: Use async with properly
             async with get_db_session() as session:
                 # Check if article already exists (by title and category)
                 existing = await session.execute(
@@ -37,7 +38,7 @@ class DatabaseService:
                 )
                 
                 session.add(article)
-                await session.commit()
+                # No need to commit - handled by context manager
                 
                 print(f"✅ Saved article: {article_data['naslov'][:50]}...")
                 return True
