@@ -23,11 +23,19 @@ class AuthService:
     @staticmethod
     def hash_password(password: str) -> str:
         """Hash a password for storing"""
+        # FIXED: Bcrypt has 72 byte limit - truncate BEFORE hashing
+        if len(password.encode('utf-8')) > 72:
+            password = password[:72]
+        
         return pwd_context.hash(password)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash"""
+        # FIXED: Truncate password before verification too
+        if len(plain_password.encode('utf-8')) > 72:
+            plain_password = plain_password[:72]
+        
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod
@@ -75,7 +83,7 @@ class AuthService:
         if existing_user:
             return None  # User already exists
         
-        # Create new user
+        # Create new user - hash_password now handles truncation
         hashed_password = AuthService.hash_password(password)
         
         new_user = User(
@@ -110,7 +118,7 @@ class AuthService:
         if not user:
             return None
         
-        # Verify password
+        # Verify password - verify_password now handles truncation
         if not AuthService.verify_password(password, user.password_hash):
             return None
         
