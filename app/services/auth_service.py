@@ -21,21 +21,36 @@ class AuthService:
     """Authentication service for user management"""
     
     @staticmethod
+    def _truncate_password(password: str, max_bytes: int = 72) -> str:
+        """
+        Safely truncate password to max_bytes, handling UTF-8 properly.
+        Bcrypt has a 72-byte limit.
+        """
+        # Encode to bytes
+        password_bytes = password.encode('utf-8')
+        
+        # If within limit, return as-is
+        if len(password_bytes) <= max_bytes:
+            return password
+        
+        # Truncate at byte level, handling multi-byte UTF-8 characters
+        # Use 'ignore' to skip incomplete multi-byte sequences at the end
+        truncated = password_bytes[:max_bytes].decode('utf-8', errors='ignore')
+        
+        return truncated
+    
+    @staticmethod
     def hash_password(password: str) -> str:
         """Hash a password for storing"""
-        # FIXED: Bcrypt has 72 byte limit - truncate BEFORE hashing
-        if len(password.encode('utf-8')) > 72:
-            password = password[:72]
-        
+        # FIXED: Bcrypt has 72 byte limit - truncate safely BEFORE hashing
+        password = AuthService._truncate_password(password, max_bytes=72)
         return pwd_context.hash(password)
     
     @staticmethod
     def verify_password(plain_password: str, hashed_password: str) -> bool:
         """Verify a password against its hash"""
-        # FIXED: Truncate password before verification too
-        if len(plain_password.encode('utf-8')) > 72:
-            plain_password = plain_password[:72]
-        
+        # FIXED: Truncate password before verification for consistency
+        plain_password = AuthService._truncate_password(plain_password, max_bytes=72)
         return pwd_context.verify(plain_password, hashed_password)
     
     @staticmethod
@@ -83,7 +98,7 @@ class AuthService:
         if existing_user:
             return None  # User already exists
         
-        # Create new user - hash_password now handles truncation
+        # Create new user - hash_password now handles truncation safely
         hashed_password = AuthService.hash_password(password)
         
         new_user = User(
@@ -118,7 +133,7 @@ class AuthService:
         if not user:
             return None
         
-        # Verify password - verify_password now handles truncation
+        # Verify password - verify_password now handles truncation safely
         if not AuthService.verify_password(password, user.password_hash):
             return None
         
