@@ -82,6 +82,10 @@ async def register_user(
     if len(password) < 8:
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
     
+    # FIXED: Bcrypt has 72 byte limit - truncate password if too long
+    if len(password.encode('utf-8')) > 72:
+        password = password[:72]  # Truncate to 72 characters
+    
     if not categories or len(categories) < 2:
         raise HTTPException(status_code=400, detail="Please select at least 2 categories")
     
@@ -137,6 +141,10 @@ async def login_user(
     
     if not email or not password:
         raise HTTPException(status_code=400, detail="Email and password are required")
+    
+    # FIXED: Bcrypt has 72 byte limit - truncate password if too long
+    if len(password.encode('utf-8')) > 72:
+        password = password[:72]  # Truncate to 72 characters
     
     # FIXED: Use async with properly
     try:

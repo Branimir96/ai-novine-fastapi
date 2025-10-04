@@ -151,6 +151,10 @@
         margin-top: var(--space-xs);
     }
 
+    .hint-text.warning {
+        color: #f39c12;
+    }
+
     .login-link {
         text-align: center;
         margin-top: var(--space-lg);
@@ -174,6 +178,26 @@
         border-radius: 8px;
         margin-bottom: var(--space-lg);
         display: none;
+    }
+
+    .password-strength {
+        margin-top: var(--space-xs);
+        font-size: 0.85rem;
+        padding: var(--space-xs) var(--space-sm);
+        border-radius: 6px;
+        display: none;
+    }
+
+    .password-strength.weak {
+        background: #f8d7da;
+        color: #721c24;
+        display: block;
+    }
+
+    .password-strength.good {
+        background: #d4edda;
+        color: #155724;
+        display: block;
     }
 </style>
 
@@ -208,8 +232,10 @@
                     placeholder="Minimalno 8 znakova"
                     required
                     minlength="8"
+                    maxlength="72"
                 >
-                <div class="hint-text">Minimalno 8 znakova</div>
+                <div class="hint-text">Minimalno 8 znakova, maksimalno 72 znaka</div>
+                <div id="passwordStrength" class="password-strength"></div>
             </div>
 
             <!-- Full Name (Optional) -->
@@ -307,10 +333,31 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('registerForm');
+    const passwordInput = document.getElementById('password');
+    const passwordStrength = document.getElementById('passwordStrength');
     const checkboxes = document.querySelectorAll('input[name="categories"]');
     const counter = document.getElementById('categoryCount');
     const submitBtn = document.getElementById('submitBtn');
     const errorMessage = document.getElementById('errorMessage');
+
+    // Password validation and strength indicator
+    passwordInput.addEventListener('input', function() {
+        const password = this.value;
+        const length = password.length;
+        
+        // Check if password is too long (72 character limit for bcrypt)
+        if (length > 72) {
+            passwordStrength.textContent = '⚠️ Password too long! Max 72 characters. It will be automatically truncated.';
+            passwordStrength.className = 'password-strength weak';
+            this.value = password.substring(0, 72); // Auto-truncate
+        } else if (length < 8) {
+            passwordStrength.textContent = '❌ Too short - minimum 8 characters';
+            passwordStrength.className = 'password-strength weak';
+        } else if (length >= 8 && length <= 72) {
+            passwordStrength.textContent = '✅ Good password length';
+            passwordStrength.className = 'password-strength good';
+        }
+    });
 
     // Update category counter and validation
     function updateCategorySelection() {
@@ -339,6 +386,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission
     form.addEventListener('submit', function(e) {
         const checked = document.querySelectorAll('input[name="categories"]:checked');
+        const password = passwordInput.value;
+        
+        // Check password length
+        if (password.length < 8) {
+            e.preventDefault();
+            showError('Password must be at least 8 characters');
+            return false;
+        }
+        
+        if (password.length > 72) {
+            e.preventDefault();
+            showError('Password too long (max 72 characters)');
+            return false;
+        }
         
         if (checked.length < 2) {
             e.preventDefault();
